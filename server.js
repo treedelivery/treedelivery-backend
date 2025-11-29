@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
+sgMail.setApiKey(process.env.SENDGRID_KEY);
+
 
 dotenv.config();
 
@@ -68,29 +71,27 @@ app.post("/order", async (req, res) => {
 
     // Bestätigungsmail an Kunden schicken (Fehler beim Mailversand killen die Bestellung NICHT)
     try {
-      await transporter.sendMail({
-        from: `"TreeDelivery Siegen" <${process.env.EMAIL_USER || "treedeliverysiegen@gmail.com"}>`,
-        to: data.email,
-        subject: "Deine TreeDelivery-Bestellung 🎄",
-        text: `
+await sgMail.send({
+  to: data.email,
+  from: process.env.EMAIL_FROM,
+  subject: "Ihre TreeDelivery-Bestellung 🎄",
+  text: `
 Hallo ${data.street || "Kunde"},
 
-vielen Dank für deine Bestellung bei TreeDelivery!
+vielen Dank für Ihre Bestellung bei TreeDelivery!
 
-Deine Bestelldaten:
+Ihre Bestelldaten:
 - Baumgröße: ${data.size}
 - Straße & Hausnummer: ${data.street}
 - PLZ / Ort: ${data.zip} ${data.city}
 - Wunschtermin: ${data.date || "Kein spezieller Termin gewählt"}
 - Kunden-ID: ${customerId}
 
-Mit deiner Kunden-ID kannst du deine Bestellung später auf unserer Website unter "Meine Bestellung" aufrufen.
-
-Die genauen Lieferzeiten stehen in einer separaten E-Mail oder werden dir rechtzeitig mitgeteilt.
-Die Bezahlung erfolgt bar bei Lieferung.
-
 Frohe Weihnachten!
-Dein TreeDelivery-Team
+Ihr TreeDelivery-Team
+  `.trim()
+});
+
         `.trim()
       });
 
