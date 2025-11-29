@@ -10,7 +10,14 @@ app.use(express.json());
 app.use(cors());
 
 // ------- MongoDB Connection -------
-const client = new MongoClient(process.env.MONGO_URL);
+const client = new MongoClient(process.env.MONGO_URL, {
+  serverApi: {
+    version: "1",
+    strict: false,
+    deprecationErrors: false,
+  }
+});
+
 await client.connect();
 const db = client.db("treedelivery");
 const orders = db.collection("orders");
