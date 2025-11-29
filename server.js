@@ -6,14 +6,23 @@ import sgMail from "@sendgrid/mail";
 
 dotenv.config();
 
-// --- SendGrid aktivieren ---
-sgMail.setApiKey(process.env.SENDGRID_KEY);
+// ---- SendGrid initialisieren ----
+if (!process.env.SENDGRID_KEY) {
+  console.error("WARNUNG: SENDGRID_KEY ist nicht gesetzt!");
+} else {
+  sgMail.setApiKey(process.env.SENDGRID_KEY);
+}
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 // ------- MongoDB Connection -------
+if (!process.env.MONGO_URL) {
+  console.error("FEHLER: MONGO_URL ist nicht gesetzt!");
+  process.exit(1);
+}
+
 const client = new MongoClient(process.env.MONGO_URL);
 await client.connect();
 const db = client.db("treedelivery");
@@ -38,6 +47,7 @@ function generateId() {
 app.post("/order", async (req, res) => {
   try {
     const data = req.body;
+    console.log("Neue Bestellung:", data);
 
     // PLZ check
     if (!allowedZips.includes(data.zip)) {
@@ -59,36 +69,51 @@ app.post("/order", async (req, res) => {
 
     await orders.insertOne(order);
 
-    // --- Bestellbestätigung senden (SendGrid) ---
+    // Bestätigungsmail an Kunden schicken
     try {
+      const fromAddress = process.env.EMAIL_FROM || "treedeliverysiegen@gmail.com";
+
       await sgMail.send({
         to: data.email,
-        from: process.env.EMAIL_FROM, // MUSS in Render gesetzt werden!
-        subject: "Ihre TreeDelivery-Bestellung 🎄",
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung 🎄",
         text: `
 Hallo ${data.street || "Kunde"},
 
-vielen Dank für Ihre Bestellung bei TreeDelivery!
+vielen Dank für deine Bestellung bei TreeDelivery!
 
-Ihre Bestelldaten:
+Deine Bestelldaten:
 - Baumgröße: ${data.size}
 - Straße & Hausnummer: ${data.street}
 - PLZ / Ort: ${data.zip} ${data.city}
 - Wunschtermin: ${data.date || "Kein spezieller Termin gewählt"}
 - Kunden-ID: ${customerId}
 
+Mit deiner Kunden-ID kannst du deine Bestellung später auf unserer Website unter "Meine Bestellung" aufrufen.
+
+Die Bezahlung erfolgt bar bei Lieferung.
+
 Frohe Weihnachten!
-Ihr TreeDelivery-Team
+Dein TreeDelivery-Team
         `.trim()
       });
 
-    } catch (mailErr) {
-      console.error("Fehler beim Mailversand:", mailErr);
+      // Optional: Kopie an Admin
+      if (process.env.ADMIN_EMAIL) {
+        await sgMail.send({
+          to: process.env.ADMIN_EMAIL,
+          from: fromAddress,
+          subject: `Neue TreeDelivery-Bestellung – ${customerId}`,
+          text: `Neue Bestellung:\n\n${JSON.stringify(order, null, 2)}`
+        });
+      }
 
+    } catch (mailErr) {
+      console.error("Fehler beim Mailversand via SendGrid:", mailErr);
       return res.json({
         success: true,
         customerId,
-        mailWarning: "Bestellung gespeichert, aber SendGrid konnte die E-Mail nicht senden."
+        mailWarning: "Bestellung gespeichert, aber E-Mail konnte nicht gesendet werden."
       });
     }
 
