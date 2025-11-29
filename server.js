@@ -2,12 +2,12 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
-import nodemailer from "nodemailer";
 import sgMail from "@sendgrid/mail";
-sgMail.setApiKey(process.env.SENDGRID_KEY);
-
 
 dotenv.config();
+
+// --- SendGrid aktivieren ---
+sgMail.setApiKey(process.env.SENDGRID_KEY);
 
 const app = express();
 app.use(express.json());
@@ -28,16 +28,6 @@ const allowedZips = [
   "35708", "35683", "35684", "35685",
   "35745", "57555", "57399", "57610"
 ];
-
-// ------- Mail-Transporter (Gmail) -------
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    // HIER KEIN PASSWORT EINGEBEN – kommt aus den Env-Variablen!
-    user: process.env.EMAIL_USER, // z.B. treedeliverysiegen@gmail.com
-    pass: process.env.EMAIL_PASS  // App-Passwort aus Google
-  }
-});
 
 // ------- Kunden-ID Generator -------
 function generateId() {
@@ -69,13 +59,13 @@ app.post("/order", async (req, res) => {
 
     await orders.insertOne(order);
 
-    // Bestätigungsmail an Kunden schicken (Fehler beim Mailversand killen die Bestellung NICHT)
+    // --- Bestellbestätigung senden (SendGrid) ---
     try {
-await sgMail.send({
-  to: data.email,
-  from: process.env.EMAIL_FROM,
-  subject: "Ihre TreeDelivery-Bestellung 🎄",
-  text: `
+      await sgMail.send({
+        to: data.email,
+        from: process.env.EMAIL_FROM, // MUSS in Render gesetzt werden!
+        subject: "Ihre TreeDelivery-Bestellung 🎄",
+        text: `
 Hallo ${data.street || "Kunde"},
 
 vielen Dank für Ihre Bestellung bei TreeDelivery!
@@ -89,29 +79,16 @@ Ihre Bestelldaten:
 
 Frohe Weihnachten!
 Ihr TreeDelivery-Team
-  `.trim()
-});
-
         `.trim()
       });
 
-      // Optional: Kopie an Admin (wenn du das später nutzen willst)
-      if (process.env.ADMIN_EMAIL) {
-        await transporter.sendMail({
-          from: `"TreeDelivery System" <${process.env.EMAIL_USER || "treedeliverysiegen@gmail.com"}>`,
-          to: process.env.ADMIN_EMAIL,
-          subject: `Neue Bestellung – ${customerId}`,
-          text: `Neue Bestellung:\n\n${JSON.stringify(order, null, 2)}`
-        });
-      }
-
     } catch (mailErr) {
       console.error("Fehler beim Mailversand:", mailErr);
-      // Wir geben trotzdem success zurück, nur mit Hinweis
+
       return res.json({
         success: true,
         customerId,
-        mailWarning: "Bestellung gespeichert, aber E-Mail konnte nicht gesendet werden."
+        mailWarning: "Bestellung gespeichert, aber SendGrid konnte die E-Mail nicht senden."
       });
     }
 
