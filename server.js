@@ -158,8 +158,9 @@ console.log("DB:", doc);
 
 // ------- Bestellung aktualisieren -------
 app.post("/update", async (req, res) => {
-	console.log("UPDATE REQUEST ARRIVED");
-console.log("BODY:", req.body);
+  console.log("UPDATE REQUEST ARRIVED");
+  console.log("BODY:", req.body);
+
   try {
     const { email, customerId, size, street, zip, city, date } = req.body;
 
@@ -169,11 +170,15 @@ console.log("BODY:", req.body);
       { returnDocument: "after" }
     );
 
-    if (!result.value) {
+    // If no document found:
+    if (!result || !result.value) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    res.json({ success: true, updated: result.value });
+    res.json({
+      success: true,
+      updated: result.value
+    });
 
   } catch (err) {
     console.error("Fehler in /update:", err);
