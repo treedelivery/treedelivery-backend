@@ -564,8 +564,8 @@ function setupLookup() {
     resultEl.style.display = "none";
     resultEl.textContent = "";
 
-    const email = document.getElementById("lookup-email").value.trim();
-    const customerId = document.getElementById("lookup-id").value.trim();
+const email = document.getElementById("lookup-email").value.trim();
+const customerId = document.getElementById("lookup-id").value.trim().toUpperCase();
 
     if (!email || !customerId) {
       statusEl.style.color = "#ff6b6b";
