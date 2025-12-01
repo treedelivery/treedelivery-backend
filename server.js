@@ -28,7 +28,10 @@ await client.connect();
 const db = client.db("treedelivery");
 const orders = db.collection("orders");
 
-// ------- Allowed ZIPs -------
+// ------- Konstanten -------
+const FROM = "bestellung@treedelivery.de";
+const ADMIN = process.env.ADMIN_EMAIL || "kontakt@treedelivery.de";
+
 const allowedZips = [
   "57072","57074","57076","57078","57080",
   "57223","57234","57250","57258","57271",
@@ -38,32 +41,19 @@ const allowedZips = [
   "35745","57555","57399","57610"
 ];
 
-// ------- Kunden-ID Generator -------
 function generateId() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
-
-// 🟩 ADMIN MAIL ADDRESS
-const ADMIN = process.env.ADMIN_EMAIL || "kontakt@treedelivery.de";
-const FROM = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
 // ------- Bestellung speichern -------
 app.post("/order", async (req, res) => {
   try {
     const data = req.body;
-    console.log("Neue Bestellung:", data);
 
-    // PLZ check
     if (!allowedZips.includes(data.zip)) {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets" });
     }
 
-    // E-Mail check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      return res.status(400).json({ error: "Ungültige E-Mail" });
-    }
-
-    // Prüfen, ob es für diese Email schon eine Bestellung gibt
     const existing = await orders.findOne({ email: data.email });
     if (existing) {
       return res.status(400).json({
@@ -72,55 +62,46 @@ app.post("/order", async (req, res) => {
     }
 
     const customerId = generateId();
-
-    const order = {
-      ...data,
-      customerId,
-      createdAt: new Date()
-    };
+    const order = { ...data, customerId, createdAt: new Date() };
 
     await orders.insertOne(order);
 
-    // Bestätigungsmail an Kunden
+    // Kundenmail
     try {
       await sgMail.send({
         to: data.email,
         from: FROM,
         subject: "Deine TreeDelivery-Bestellung 🎄",
         text: `
-Hallo ${data.street || "Kunde"},
+Danke für deine Bestellung!
 
-vielen Dank für deine Bestellung bei TreeDelivery!
-
-Deine Bestelldaten:
-- Baumgröße: ${data.size}
-- Straße & Hausnummer: ${data.street}
-- PLZ / Ort: ${data.zip} ${data.city}
-- Wunschtermin: ${data.date || "Kein spezieller Termin gewählt"}
-- Kunden-ID: ${customerId}
+Kunden-ID: ${customerId}
+Größe: ${data.size}
+Adresse: ${data.street}, ${data.zip} ${data.city}
+Lieferdatum: ${data.date || "Kein Termin"}
 
 Viele Grüße
-TreeDelivery-Team
+TreeDelivery
         `.trim()
       });
 
-      // ADMIN erhält Kopie
+      // Admin Benachrichtigung
       await sgMail.send({
         to: ADMIN,
         from: FROM,
         subject: `Neue Bestellung – ${customerId}`,
-        text: `Neue Bestellung:\n${JSON.stringify(order, null, 2)}`
+        text: JSON.stringify(order, null, 2)
       });
 
-    } catch (mailErr) {
-      console.error("Fehler Mail /order:", mailErr);
+    } catch (err) {
+      console.error("MAIL FEHLER /order:", err);
     }
 
     res.json({ success: true, customerId });
 
   } catch (err) {
     console.error("Fehler in /order:", err);
-    res.status(500).json({ error: "Serverfehler bei der Bestellung" });
+    res.status(500).json({ error: "Serverfehler" });
   }
 });
 
@@ -128,7 +109,6 @@ TreeDelivery-Team
 app.post("/lookup", async (req, res) => {
   try {
     const { email, customerId } = req.body;
-
     const result = await orders.findOne({ email, customerId });
 
     if (!result) {
@@ -139,14 +119,12 @@ app.post("/lookup", async (req, res) => {
 
   } catch (err) {
     console.error("Fehler in /lookup:", err);
-    res.status(500).json({ error: "Serverfehler bei der Suche" });
+    res.status(500).json({ error: "Serverfehler" });
   }
 });
 
 // ------- Bestellung aktualisieren -------
 app.post("/update", async (req, res) => {
-  console.log("UPDATE REQUEST:", req.body);
-
   try {
     const { email, customerId, size, street, zip, city, date } = req.body;
 
@@ -156,47 +134,39 @@ app.post("/update", async (req, res) => {
       { returnDocument: "after" }
     );
 
-    if (!result || !result.value) {
+    if (!result.value) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     const updated = result.value;
 
-    // Kundemail + Adminmail
+    // Email an Kunde + Admin
     try {
-      // Kunde bekommt Änderungsmail
       await sgMail.send({
         to: email,
         from: FROM,
-        subject: "Deine TreeDelivery-Bestellung wurde geändert ✏️",
+        subject: "Deine TreeDelivery Bestellung wurde geändert ✏️",
         text: `
-Hallo,
-
-deine Bestellung wurde erfolgreich geändert.
+Deine Bestellung wurde erfolgreich geändert.
 
 Neue Daten:
-- Größe: ${updated.size}
-- Straße: ${updated.street}
-- PLZ/Ort: ${updated.zip} ${updated.city}
-- Lieferdatum: ${updated.date || "Kein Termin"}
+Größe: ${updated.size}
+Adresse: ${updated.street}, ${updated.zip} ${updated.city}
+Lieferdatum: ${updated.date || "Kein Termin"}
 
 Kunden-ID: ${customerId}
-
-Viele Grüße
-TreeDelivery-Team
         `.trim()
       });
 
-      // ADMIN bekommt Kopie
       await sgMail.send({
         to: ADMIN,
         from: FROM,
         subject: `Bestellung geändert – ${customerId}`,
-        text: `Geänderte Bestellung:\n${JSON.stringify(updated, null, 2)}`
+        text: JSON.stringify(updated, null, 2)
       });
 
-    } catch (mailErr) {
-      console.error("Fehler Mail /update:", mailErr);
+    } catch (err) {
+      console.error("MAIL FEHLER /update:", err);
     }
 
     res.json({ success: true, updated });
@@ -209,46 +179,37 @@ TreeDelivery-Team
 
 // ------- Bestellung löschen -------
 app.post("/delete", async (req, res) => {
-  console.log("DELETE REQUEST:", req.body);
-
   try {
     const { email, customerId } = req.body;
 
     const deleted = await orders.findOneAndDelete({ email, customerId });
 
-    if (!deleted || !deleted.value) {
+    if (!deleted.value) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    // Kunde + Admin Mails senden
+    // EMAIL AN KUNDE + ADMIN
     try {
-      // Kunde
       await sgMail.send({
         to: email,
         from: FROM,
-        subject: "Deine TreeDelivery-Bestellung wurde storniert ❌",
+        subject: "Deine TreeDelivery Bestellung wurde storniert ❌",
         text: `
-Hallo,
-
-deine Bestellung wurde erfolgreich storniert.
+Deine Bestellung wurde erfolgreich storniert.
 
 Kunden-ID: ${customerId}
-
-Viele Grüße
-TreeDelivery-Team
         `.trim()
       });
 
-      // Admin erhält Storno
       await sgMail.send({
         to: ADMIN,
         from: FROM,
         subject: `Bestellung storniert – ${customerId}`,
-        text: `Stornierte Bestellung:\n${JSON.stringify(deleted.value, null, 2)}`
+        text: JSON.stringify(deleted.value, null, 2)
       });
 
-    } catch (mailErr) {
-      console.error("Fehler Mail /delete:", mailErr);
+    } catch (err) {
+      console.error("MAIL FEHLER /delete:", err);
     }
 
     res.json({ success: true });
