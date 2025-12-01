@@ -71,7 +71,7 @@ app.post("/order", async (req, res) => {
 
     // Bestätigungsmail an Kunden schicken
     try {
-      const fromAddress = process.env.EMAIL_FROM || "treedeliverysiegen@gmail.com";
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
       await sgMail.send({
         to: data.email,
