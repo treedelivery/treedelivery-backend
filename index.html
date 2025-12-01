@@ -650,6 +650,9 @@ function renderOrderCard(order) {
 
 function setupOrderEditControls(order) {
 	console.log("setupOrderEditControls wurde ausgeführt", order);
+	
+	console.log("DELETE BUTTON:", document.getElementById("btn-delete"));
+console.log("SAVE BUTTON:", document.getElementById("btn-save"));
 
   const editable = ["size","street","zip","city","date"];
   const inputs = editable.map(id => document.getElementById("edit-"+id));
@@ -668,6 +671,7 @@ function setupOrderEditControls(order) {
 
   // Speichern
   btnSave.onclick = async () => {
+      console.log("SAVE CLICKED");
 	  console.log("SAVE BUTTON WURDE GEKLICKT");
     status.textContent = "Speichere...";
     status.style.color = "var(--gold-light)";
@@ -702,6 +706,7 @@ customerId: currentOrder.customerId,
 
   // Stornieren
   btnDelete.onclick = async () => {
+      console.log("DELETE CLICKED");
     const ok = confirm("Willst du die Bestellung wirklich stornieren?");
     if (!ok) return;
 
