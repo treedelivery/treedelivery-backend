@@ -148,6 +148,11 @@ app.post("/lookup", async (req, res) => {
   } catch (err) {
     console.error("Fehler in /lookup:", err);
     res.status(500).json({ error: "Serverfehler bei der Suche" });
+	
+	
+	console.log("CLIENT-SUCHT:", email, customerId);
+const doc = await orders.find({}).toArray();
+console.log("DB:", doc);
   }
 });
 
