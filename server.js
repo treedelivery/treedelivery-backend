@@ -30,12 +30,12 @@ const orders = db.collection("orders");
 
 // ------- Allowed ZIPs -------
 const allowedZips = [
-  "57072", "57074", "57076", "57078", "57080",
-  "57223", "57234", "57250", "57258", "57271",
-  "57290", "57299",
-  "57319", "57334", "57339",
-  "35708", "35683", "35684", "35685",
-  "35745", "57555", "57399", "57610"
+  "57072","57074","57076","57078","57080",
+  "57223","57234","57250","57258","57271",
+  "57290","57299",
+  "57319","57334","57339",
+  "35708","35683","35684","35685",
+  "35745","57555","57399","57610"
 ];
 
 // ------- Kunden-ID Generator -------
@@ -106,7 +106,7 @@ Dein TreeDelivery-Team
         `.trim()
       });
 
-      // Optional: Kopie an Admin
+      // Kopie an Admin
       if (process.env.ADMIN_EMAIL) {
         await sgMail.send({
           to: process.env.ADMIN_EMAIL,
@@ -118,11 +118,6 @@ Dein TreeDelivery-Team
 
     } catch (mailErr) {
       console.error("Fehler beim Mailversand via SendGrid:", mailErr);
-      return res.json({
-        success: true,
-        customerId,
-        mailWarning: "Bestellung gespeichert, aber E-Mail konnte nicht gesendet werden."
-      });
     }
 
     res.json({ success: true, customerId });
@@ -145,14 +140,10 @@ app.post("/lookup", async (req, res) => {
     }
 
     res.json(result);
+
   } catch (err) {
     console.error("Fehler in /lookup:", err);
     res.status(500).json({ error: "Serverfehler bei der Suche" });
-	
-	
-	console.log("CLIENT-SUCHT:", email, customerId);
-const doc = await orders.find({}).toArray();
-console.log("DB:", doc);
   }
 });
 
@@ -170,15 +161,41 @@ app.post("/update", async (req, res) => {
       { returnDocument: "after" }
     );
 
-    // If no document found:
     if (!result || !result.value) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    res.json({
-      success: true,
-      updated: result.value
-    });
+    // Änderungsbestätigung senden
+    try {
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+
+      await sgMail.send({
+        to: email,
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung wurde aktualisiert ✏️🎄",
+        text: `
+Hallo,
+
+deine Bestellung wurde erfolgreich geändert.
+
+Neue Bestelldaten:
+- Baumgröße: ${result.value.size}
+- Straße & Hausnummer: ${result.value.street}
+- PLZ / Ort: ${result.value.zip} ${result.value.city}
+- Lieferdatum: ${result.value.date || "Kein spezieller Termin"}
+
+Kunden-ID: ${customerId}
+
+Viele Grüße
+Dein TreeDelivery-Team
+        `.trim()
+      });
+
+    } catch (mailErr) {
+      console.error("Fehler beim Update-Mailversand:", mailErr);
+    }
+
+    res.json({ success: true, updated: result.value });
 
   } catch (err) {
     console.error("Fehler in /update:", err);
@@ -188,15 +205,15 @@ app.post("/update", async (req, res) => {
 
 // ------- Bestellung löschen -------
 app.post("/delete", async (req, res) => {
-	
-	console.log("DELETE REQUEST ARRIVED");
-console.log("BODY:", req.body);
+  console.log("DELETE REQUEST ARRIVED");
+  console.log("BODY:", req.body);
+
   try {
     const { email, customerId } = req.body;
 
     const deleted = await orders.findOneAndDelete({ email, customerId });
 
-    if (!deleted.value) {
+    if (!deleted || !deleted.value) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
@@ -219,6 +236,7 @@ Viele Grüße
 Dein TreeDelivery-Team
         `.trim()
       });
+
     } catch (mailErr) {
       console.error("Fehler beim Storno-Mailversand:", mailErr);
     }
