@@ -553,6 +553,8 @@ function setupOrderSubmit() {
 
 // ------- Bestellung abrufen -------
 function setupLookup() {
+	console.log("currentOrder gesetzt:", data);
+currentOrder = data;
   const form = document.getElementById("lookup-form");
   const statusEl = document.getElementById("lookup-status");
   const resultEl = document.getElementById("lookup-result");
@@ -649,6 +651,7 @@ function renderOrderCard(order) {
 }
 
 function setupOrderEditControls(order) {
+	console.log("setupOrderEditControls wurde ausgeführt", order);
 
   const editable = ["size","street","zip","city","date"];
   const inputs = editable.map(id => document.getElementById("edit-"+id));
@@ -667,6 +670,7 @@ function setupOrderEditControls(order) {
 
   // Speichern
   btnSave.onclick = async () => {
+	  console.log("SAVE BUTTON WURDE GEKLICKT");
     status.textContent = "Speichere...";
     status.style.color = "var(--gold-light)";
 
