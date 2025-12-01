@@ -337,6 +337,7 @@
 <!-- LOGIK -->
 <script>
 const BACKEND_URL = "https://treedelivery-backend.onrender.com";
+let currentOrder = null;
 
 // ------- Tabs -------
 document.addEventListener("DOMContentLoaded", () => {
@@ -589,6 +590,8 @@ function setupLookup() {
 
 statusEl.style.color = "#7CFF93";
 statusEl.textContent = "Bestellung gefunden:";
+
+currentOrder = data;   // <-- ORIGINAL-BESTELLUNG SPEICHERN
 renderOrderCard(data);
     } catch (err) {
       console.error(err);
@@ -668,8 +671,8 @@ function setupOrderEditControls(order) {
     status.style.color = "var(--gold-light)";
 
     const payload = {
-      email: order.email,
-      customerId: order.customerId,
+email: currentOrder.email,
+customerId: currentOrder.customerId,
       size: document.getElementById("edit-size").value,
       street: document.getElementById("edit-street").value,
       zip: document.getElementById("edit-zip").value,
@@ -707,8 +710,8 @@ function setupOrderEditControls(order) {
       method: "POST",
       headers: {"Content-Type":"application/json"},
       body: JSON.stringify({
-        email: order.email,
-        customerId: order.customerId
+email: currentOrder.email,
+customerId: currentOrder.customerId,
       })
     });
 
