@@ -158,6 +158,8 @@ console.log("DB:", doc);
 
 // ------- Bestellung aktualisieren -------
 app.post("/update", async (req, res) => {
+	console.log("UPDATE REQUEST ARRIVED");
+console.log("BODY:", req.body);
   try {
     const { email, customerId, size, street, zip, city, date } = req.body;
 
@@ -181,6 +183,9 @@ app.post("/update", async (req, res) => {
 
 // ------- Bestellung löschen -------
 app.post("/delete", async (req, res) => {
+	
+	console.log("DELETE REQUEST ARRIVED");
+console.log("BODY:", req.body);
   try {
     const { email, customerId } = req.body;
 
