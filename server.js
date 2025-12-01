@@ -59,6 +59,14 @@ app.post("/order", async (req, res) => {
       return res.status(400).json({ error: "Ungültige E-Mail" });
     }
 
+    // Prüfen, ob es für diese Email schon eine Bestellung gibt
+    const existing = await orders.findOne({ email: data.email });
+    if (existing) {
+      return res.status(400).json({
+        error: "Für diese E-Mail existiert bereits eine Bestellung."
+      });
+    }
+
     const customerId = generateId();
 
     const order = {
@@ -140,6 +148,71 @@ app.post("/lookup", async (req, res) => {
   } catch (err) {
     console.error("Fehler in /lookup:", err);
     res.status(500).json({ error: "Serverfehler bei der Suche" });
+  }
+});
+
+// ------- Bestellung aktualisieren -------
+app.post("/update", async (req, res) => {
+  try {
+    const { email, customerId, size, street, zip, city, date } = req.body;
+
+    const result = await orders.findOneAndUpdate(
+      { email, customerId },
+      { $set: { size, street, zip, city, date } },
+      { returnDocument: "after" }
+    );
+
+    if (!result.value) {
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
+    }
+
+    res.json({ success: true, updated: result.value });
+
+  } catch (err) {
+    console.error("Fehler in /update:", err);
+    res.status(500).json({ error: "Serverfehler" });
+  }
+});
+
+// ------- Bestellung löschen -------
+app.post("/delete", async (req, res) => {
+  try {
+    const { email, customerId } = req.body;
+
+    const deleted = await orders.findOneAndDelete({ email, customerId });
+
+    if (!deleted.value) {
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
+    }
+
+    // Storno-Mail senden
+    try {
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+
+      await sgMail.send({
+        to: email,
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung wurde storniert ❌🎄",
+        text: `
+Hallo,
+
+deine Bestellung wurde erfolgreich storniert.
+
+Falls dies ein Fehler war, kannst du jederzeit erneut bestellen.
+
+Viele Grüße
+Dein TreeDelivery-Team
+        `.trim()
+      });
+    } catch (mailErr) {
+      console.error("Fehler beim Storno-Mailversand:", mailErr);
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Fehler in /delete:", err);
+    res.status(500).json({ error: "Serverfehler" });
   }
 });
 
