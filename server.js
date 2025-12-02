@@ -163,11 +163,10 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets" });
     }
 
-    // Logging für Debug
-    console.log("Update-Request:", { email, customerId, size, street, zip, city });
+    console.log("Update-Request:", { email, customerId, size, street, zip, city, date });
 
-    // Robuste findOneAndUpdate mit Fallback für verschiedene Treiber-Versionen
-    const result = await orders.findOneAndUpdate(
+    // 1) Update ausführen
+    const updateResult = await orders.updateOne(
       { email, customerId },
       {
         $set: {
@@ -177,42 +176,26 @@ app.post("/update", async (req, res) => {
           city,
           date: date || null
         }
-      },
-      {
-        // Für MongoDB Driver v4+: returnDocument: "after"
-        // Für MongoDB Driver v3.x: returnOriginal: false
-        // Beide zusammen für maximale Kompatibilität
-        returnDocument: "after",
-        returnOriginal: false
       }
     );
 
-    console.log("Update-Result:", result);
+    console.log("Update-Result:", updateResult);
 
-    // Prüfen, ob Update erfolgreich war (mehrere Wege je nach Treiber)
-    let updatedOrder = null;
-    let updateSuccessful = false;
-
-    if (result.value) {
-      // Erfolgreich: aktualisiertes Dokument vorhanden
-      updatedOrder = result.value;
-      updateSuccessful = true;
-    } else if (result.matchedCount && result.matchedCount > 0) {
-      // Fallback: Dokument gefunden und aktualisiert, aber value ist null (älterer Treiber)
-      // Hole das aktualisierte Dokument nochmal
-      updatedOrder = await orders.findOne({ email, customerId });
-      updateSuccessful = !!updatedOrder;
-      console.log("Fallback: Dokument nach Update geholt:", updatedOrder);
-    } else {
-      // Kein Dokument gefunden
+    // Nichts gefunden -> 404
+    if (!updateResult.matchedCount || updateResult.matchedCount === 0) {
       return res.status(404).json({ error: "Keine Bestellung gefunden" });
     }
 
-    if (!updateSuccessful) {
+    // 2) Aktualisierte Bestellung erneut laden
+    const updatedOrder = await orders.findOne({ email, customerId });
+    console.log("Updated order from DB:", updatedOrder);
+
+    if (!updatedOrder) {
+      // extrem unwahrscheinlich, aber zur Sicherheit
       return res.status(404).json({ error: "Keine Bestellung gefunden" });
     }
 
-    // Bestätigungsmail für Update
+    // 3) Bestätigungsmail für Update
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
@@ -255,6 +238,7 @@ Dein TreeDelivery-Team
       });
     }
 
+    // 4) Erfolgsantwort
     res.json({ success: true, order: updatedOrder });
 
   } catch (err) {
@@ -262,6 +246,7 @@ Dein TreeDelivery-Team
     res.status(500).json({ error: "Serverfehler bei der Aktualisierung" });
   }
 });
+
 
 
 // ------- Health-Check -------
