@@ -702,6 +702,9 @@ function setupLookup() {
 
         editStatus.style.color = "var(--gold-light)";
         editStatus.textContent = "Storniere Bestellung…";
+		
+		
+	console.log("Delete-Request:", { email, customerId });
 
         try {
           const respDelete = await fetch(BACKEND_URL + "/delete", {
