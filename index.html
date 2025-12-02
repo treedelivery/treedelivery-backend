@@ -1092,6 +1092,13 @@ function setupLookup() {
         const newCity = editCity.value.trim();
         const newDate = editDateInput.value || null;
 
+        const tomorrowStr = getTomorrowISO();
+if (editDateToggle.checked && newDate && newDate < tomorrowStr) {
+  editStatus.style.color = "#ff6b6b";
+  editStatus.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
+  return;
+}
+
         if (!newSize || !newStreet || !newZip || !newCity) {
           editStatus.style.color = "#ff6b6b";
           editStatus.textContent = "Bitte füllen Sie alle Pflichtfelder aus.";
