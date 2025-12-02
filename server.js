@@ -174,7 +174,11 @@ app.post("/update", async (req, res) => {
           date: date || null
         }
       },
-      { returnDocument: "after" }
+      {
+        // wichtig für ältere Treiber: aktualisiertes Dokument zurückgeben
+        returnDocument: "after",
+        returnOriginal: false
+      }
     );
 
     if (!result.value) {
@@ -309,8 +313,6 @@ Dein TreeDelivery-Team
     res.status(500).json({ error: "Serverfehler bei der Stornierung" });
   }
 });
-
-
 
 // ------- Health-Check -------
 app.get("/", (req, res) => {
