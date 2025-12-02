@@ -249,30 +249,6 @@ TreeDelivery-Team
   console.error("Fehler beim Mailversand via SendGrid (Delete):", mailErr);
 }
 
-
-    // Storno-Mail senden
-    try {
-      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
-
-      await sgMail.send({
-        to: email,
-        from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung wurde storniert ❌🎄",
-        text: `
-Hallo,
-
-deine Bestellung wurde erfolgreich storniert.
-
-Falls dies ein Fehler war, kannst du jederzeit erneut bestellen.
-
-Viele Grüße
-Dein TreeDelivery-Team
-        `.trim()
-      });
-    } catch (mailErr) {
-      console.error("Fehler beim Storno-Mailversand:", mailErr);
-    }
-
     res.json({ success: true });
 
   } catch (err) {
