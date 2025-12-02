@@ -318,8 +318,6 @@
       <button class="btn btn-primary" type="submit">Bestellung suchen</button>
       <p id="lookup-status" class="status"></p>
     </form>
-	
-	<div id="order-card" style="display:none; margin-top:1.5rem;"></div>
 
     <div id="lookup-result" style="display:none; margin-top:1.5rem;"></div>
   </section>
@@ -337,7 +335,6 @@
 <!-- LOGIK -->
 <script>
 const BACKEND_URL = "https://treedelivery-backend.onrender.com";
-let currentOrder = null;
 
 // ------- Tabs -------
 document.addEventListener("DOMContentLoaded", () => {
@@ -551,21 +548,24 @@ function setupOrderSubmit() {
   });
 }
 
-// ------- Bestellung abrufen -------
+// ------- Bestellung abrufen + bearbeiten/stornieren -------
 function setupLookup() {
   const form = document.getElementById("lookup-form");
   const statusEl = document.getElementById("lookup-status");
   const resultEl = document.getElementById("lookup-result");
+
+  let currentEmail = null;
+  let currentCustomerId = null;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     statusEl.style.color = "var(--gold-light)";
     statusEl.textContent = "Suche Bestellung…";
     resultEl.style.display = "none";
-    resultEl.textContent = "";
+    resultEl.innerHTML = "";
 
-const email = document.getElementById("lookup-email").value.trim();
-const customerId = document.getElementById("lookup-id").value.trim().toUpperCase();
+    const email = document.getElementById("lookup-email").value.trim();
+    const customerId = document.getElementById("lookup-id").value.trim();
 
     if (!email || !customerId) {
       statusEl.style.color = "#ff6b6b";
@@ -588,155 +588,159 @@ const customerId = document.getElementById("lookup-id").value.trim().toUpperCase
         return;
       }
 
-statusEl.style.color = "#7CFF93";
-statusEl.textContent = "Bestellung gefunden:";
+      statusEl.style.color = "#7CFF93";
+      statusEl.textContent = "Bestellung gefunden:";
 
-currentOrder = data;   // <-- ORIGINAL-BESTELLUNG SPEICHERN
-renderOrderCard(data);
+      currentEmail = data.email || email;
+      currentCustomerId = data.customerId || customerId;
+
+      const size = data.size || "";
+      const street = data.street || "";
+      const zip = data.zip || "";
+      const city = data.city || "";
+      const date = data.date || "";
+
+      // Editierbare Karte rendern
+      resultEl.innerHTML = `
+        <div style="border-top:1px solid rgba(216,194,122,0.4); padding-top:1rem; margin-top:1rem;">
+          <p style="font-size:0.9rem; color:var(--gold-light);">
+            Kunden-ID: <strong>${currentCustomerId}</strong><br>
+            E-Mail: <strong>${currentEmail}</strong>
+          </p>
+
+          <label>Baumgröße</label>
+          <select id="edit-size" style="width:100%; margin-bottom:0.5rem;">
+            <option value="small" ${size === "small" ? "selected" : ""}>Klein – ca. 1,5 m – 60€</option>
+            <option value="medium" ${size === "medium" ? "selected" : ""}>Mittel – ca. 1,8 m – 90€</option>
+            <option value="large" ${size === "large" ? "selected" : ""}>Groß – ca. 2,1 m – 100€</option>
+          </select>
+
+          <label>Straße & Hausnummer</label>
+          <input id="edit-street" value="${street}" style="width:100%; margin-bottom:0.5rem;">
+
+          <label>PLZ</label>
+          <input id="edit-zip" value="${zip}" style="width:100%; margin-bottom:0.5rem;">
+
+          <label>Ort</label>
+          <input id="edit-city" value="${city}" style="width:100%; margin-bottom:0.5rem;">
+
+          <label>Lieferdatum (optional)</label>
+          <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}" style="width:100%; margin-bottom:0.5rem;">
+
+          <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary" id="update-btn">Änderung speichern</button>
+            <button type="button" class="btn" id="delete-btn" style="background:#552222; color:#ffbbbb;">
+              Bestellung stornieren
+            </button>
+          </div>
+
+          <p id="edit-status" class="status" style="margin-top:0.8rem;"></p>
+        </div>
+      `;
+
+      resultEl.style.display = "block";
+
+      const updateBtn = document.getElementById("update-btn");
+      const deleteBtn = document.getElementById("delete-btn");
+      const editStatus = document.getElementById("edit-status");
+
+      // UPDATE
+      updateBtn.addEventListener("click", async () => {
+        const newSize = document.getElementById("edit-size").value;
+        const newStreet = document.getElementById("edit-street").value.trim();
+        const newZip = document.getElementById("edit-zip").value.trim();
+        const newCity = document.getElementById("edit-city").value.trim();
+        const newDate = document.getElementById("edit-date").value || null;
+
+        if (!newSize || !newStreet || !newZip || !newCity) {
+          editStatus.style.color = "#ff6b6b";
+          editStatus.textContent = "Bitte alle Pflichtfelder ausfüllen.";
+          return;
+        }
+
+        editStatus.style.color = "var(--gold-light)";
+        editStatus.textContent = "Speichere Änderung…";
+
+        try {
+          const respUpdate = await fetch(BACKEND_URL + "/update", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: currentEmail,
+              customerId: currentCustomerId,
+              size: newSize,
+              street: newStreet,
+              zip: newZip,
+              city: newCity,
+              date: newDate
+            })
+          });
+
+          const dataUpdate = await respUpdate.json();
+
+          if (!respUpdate.ok) {
+            editStatus.style.color = "#ff6b6b";
+            editStatus.textContent = dataUpdate.error || "Fehler beim Aktualisieren.";
+            return;
+          }
+
+          editStatus.style.color = "#7CFF93";
+          editStatus.textContent = "Bestellung aktualisiert. Du erhältst in Kürze eine Bestätigungsmail.";
+
+        } catch (err) {
+          console.error(err);
+          editStatus.style.color = "#ff6b6b";
+          editStatus.textContent = "Server nicht erreichbar. Bitte später erneut versuchen.";
+        }
+      });
+
+      // DELETE
+      deleteBtn.addEventListener("click", async () => {
+        if (!confirm("Möchten Sie diese Bestellung wirklich stornieren?")) {
+          return;
+        }
+
+        editStatus.style.color = "var(--gold-light)";
+        editStatus.textContent = "Storniere Bestellung…";
+
+        try {
+          const respDelete = await fetch(BACKEND_URL + "/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: currentEmail,
+              customerId: currentCustomerId
+            })
+          });
+
+          const dataDelete = await respDelete.json();
+
+          if (!respDelete.ok) {
+            editStatus.style.color = "#ff6b6b";
+            editStatus.textContent = dataDelete.error || "Fehler beim Stornieren.";
+            return;
+          }
+
+          editStatus.style.color = "#7CFF93";
+          editStatus.textContent = "Bestellung storniert. Du erhältst in Kürze eine Bestätigungsmail.";
+          setTimeout(() => {
+            resultEl.style.display = "none";
+            resultEl.innerHTML = "";
+          }, 2000);
+
+        } catch (err) {
+          console.error(err);
+          editStatus.style.color = "#ff6b6b";
+          editStatus.textContent = "Server nicht erreichbar. Bitte später erneut versuchen.";
+        }
+      });
+
     } catch (err) {
       console.error(err);
       statusEl.style.color = "#ff6b6b";
       statusEl.textContent = "Server nicht erreichbar. Bitte später erneut versuchen.";
     }
   });
-}
-
-function renderOrderCard(order) {
-  const container = document.getElementById("order-card");
-  container.style.display = "block";
-
-  container.innerHTML = `
-    <div style="
-      border:1px solid rgba(216,194,122,0.3);
-      background:rgba(15,26,15,0.85);
-      padding:1.5rem;
-      border-radius:1rem;
-    ">
-
-      <h3 style="color:var(--gold-light); margin-top:0;">
-        Deine Bestellung
-      </h3>
-
-      <label>Baumgröße</label>
-      <input id="edit-size" value="${order.size}" disabled>
-
-      <label>Straße & Hausnummer</label>
-      <input id="edit-street" value="${order.street}" disabled>
-
-      <label>PLZ</label>
-      <input id="edit-zip" value="${order.zip}" disabled>
-
-      <label>Ort</label>
-      <input id="edit-city" value="${order.city}" disabled>
-
-      <label>Lieferdatum</label>
-      <input id="edit-date" type="date" value="${order.date || ""}" disabled>
-
-      <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-        <button id="btn-edit" class="btn btn-primary" style="flex:1;">Bearbeiten</button>
-        <button id="btn-delete" class="btn" style="flex:1; background:#922;">Stornieren</button>
-      </div>
-
-      <button id="btn-save" class="btn btn-primary" style="margin-top:1rem; width:100%; display:none;">
-        Änderungen speichern
-      </button>
-
-      <p id="update-status" class="status"></p>
-    </div>
-  `;
-
-  setupOrderEditControls(order);
-}
-
-function setupOrderEditControls(order) {
-	console.log("setupOrderEditControls wurde ausgeführt", order);
-	
-	console.log("DELETE BUTTON:", document.getElementById("btn-delete"));
-console.log("SAVE BUTTON:", document.getElementById("btn-save"));
-
-  const editable = ["size","street","zip","city","date"];
-  const inputs = editable.map(id => document.getElementById("edit-"+id));
-
-  const btnEdit = document.getElementById("btn-edit");
-  const btnSave = document.getElementById("btn-save");
-  const btnDelete = document.getElementById("btn-delete");
-  const status = document.getElementById("update-status");
-
-  // Bearbeiten
-  btnEdit.onclick = () => {
-    inputs.forEach(i => i.disabled = false);
-    btnSave.style.display = "block";
-    btnEdit.disabled = true;
-  };
-
-  // Speichern
-  btnSave.onclick = async () => {
-      console.log("SAVE CLICKED");
-	  console.log("SAVE BUTTON WURDE GEKLICKT");
-    status.textContent = "Speichere...";
-    status.style.color = "var(--gold-light)";
-
-    const payload = {
-email: currentOrder.email,
-customerId: currentOrder.customerId,
-      size: document.getElementById("edit-size").value,
-      street: document.getElementById("edit-street").value,
-      zip: document.getElementById("edit-zip").value,
-      city: document.getElementById("edit-city").value,
-      date: document.getElementById("edit-date").value
-    };
-
-    const resp = await fetch(BACKEND_URL + "/update", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
-    });
-
-    const data = await resp.json();
-
-    if (!resp.ok) {
-      status.textContent = data.error || "Fehler beim Speichern.";
-      status.style.color = "#ff6b6b";
-      return;
-    }
-
-    status.textContent = "Gespeichert!";
-    status.style.color = "#7CFF93";
-  };
-
-  // Stornieren
-  btnDelete.onclick = async () => {
-      console.log("DELETE CLICKED");
-    const ok = confirm("Willst du die Bestellung wirklich stornieren?");
-    if (!ok) return;
-
-    status.textContent = "Storniere...";
-    status.style.color = "var(--gold-light)";
-
-    const resp = await fetch(BACKEND_URL + "/delete", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-email: currentOrder.email,
-customerId: currentOrder.customerId,
-      })
-    });
-
-    const data = await resp.json();
-
-    if (!resp.ok) {
-      status.textContent = data.error || "Fehler.";
-      status.style.color = "#ff6b6b";
-      return;
-    }
-
-    status.textContent = "Bestellung storniert. Eine E-Mail wurde gesendet.";
-    status.style.color = "#7CFF93";
-
-    setTimeout(() => {
-      document.getElementById("order-card").style.display = "none";
-    }, 2000);
-  };
 }
 
 </script>
