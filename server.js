@@ -284,8 +284,6 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, no
     ${cancelNote}
 
     <div class="footer">
-      Bitte prüfen Sie auch Ihren <span class="highlight">Spam- bzw. Werbungsordner</span>,<br>
-      falls Sie keine E-Mail im Posteingang finden.
       <br><br>
       Mit freundlichen Grüßen<br>
       <span class="highlight">Ihr TreeDelivery-Team</span>
@@ -342,7 +340,6 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     payment,
     cancel,
     "",
-    "Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner, falls Sie keine E-Mail im Posteingang finden.",
     "",
     "Mit freundlichen Grüßen",
     "Ihr TreeDelivery-Team"
