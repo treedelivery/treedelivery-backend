@@ -345,6 +345,7 @@
 
       <label>Ort *</label>
       <input id="city" disabled>
+      <p id="city-status" class="status"></p>
 
       <label>E-Mail *</label>
       <input id="email" type="email" disabled>
@@ -435,6 +436,41 @@
 <script>
 const BACKEND_URL = "https://treedelivery-backend.onrender.com";
 
+// PLZ → Ort Mapping
+const zipToCity = {
+  "57072": "Siegen",
+  "57074": "Siegen",
+  "57076": "Siegen",
+  "57078": "Siegen",
+  "57080": "Siegen",
+  "57223": "Kreuztal",
+  "57234": "Wilnsdorf",
+  "57250": "Netphen",
+  "57258": "Freudenberg",
+  "57271": "Hilchenbach",
+  "57290": "Neunkirchen",
+  "57299": "Burbach",
+  "57319": "Bad Berleburg",
+  "57334": "Bad Laasphe",
+  "57339": "Erndtebrück",
+  "57555": "Mudersbach",
+  "57399": "Kirchhundem",
+  "57610": "Altenkirchen",
+  "35708": "Haiger",
+  "35683": "Dillenburg",
+  "35684": "Dillenburg",
+  "35685": "Dillenburg",
+  "35745": "Herborn"
+};
+
+function getCityByZip(zip) {
+  return zipToCity[zip] || null;
+}
+
+function normalizeCity(str) {
+  return (str || "").trim().toLowerCase();
+}
+
 // ------- Tabs & Initialisierung -------
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll('.nav-tabs button');
@@ -499,7 +535,10 @@ function setupFormLogic() {
   const orderBtn = document.getElementById("order-btn");
   const priceDisplay = document.getElementById("price-display");
   const zipStatus = document.getElementById("zip-status");
+  const cityStatus = document.getElementById("city-status");
   const emailStatus = document.getElementById("email-status");
+
+  let currentExpectedCity = null;
 
   // Start: alles deaktiviert außer Größe
   nameInput.disabled = true;
@@ -523,6 +562,9 @@ function setupFormLogic() {
 
     city.value = "";
     city.disabled = true;
+    cityStatus.textContent = "";
+    cityStatus.style.color = "var(--gold-light)";
+    city.style.borderColor = "";
 
     email.value = "";
     email.disabled = true;
@@ -539,6 +581,42 @@ function setupFormLogic() {
     dateWrapper.classList.remove("visible");
 
     orderBtn.disabled = true;
+  }
+
+  function resetCityValidation() {
+    cityStatus.textContent = "";
+    cityStatus.style.color = "var(--gold-light)";
+    city.style.borderColor = "";
+  }
+
+  function validateCity() {
+    resetCityValidation();
+
+    if (!currentExpectedCity) {
+      return true;
+    }
+
+    const typed = normalizeCity(city.value);
+    const expected = normalizeCity(currentExpectedCity);
+
+    if (!typed) {
+      cityStatus.textContent = "Bitte geben Sie den Ort ein.";
+      cityStatus.style.color = "#ff6b6b";
+      city.style.borderColor = "rgba(255,0,0,0.5)";
+      return false;
+    }
+
+    if (typed !== expected) {
+      cityStatus.textContent = `Der Ort passt nicht zur eingegebenen PLZ (erwartet: „${currentExpectedCity}“).`;
+      cityStatus.style.color = "#ff6b6b";
+      city.style.borderColor = "rgba(255,0,0,0.5)";
+      return false;
+    }
+
+    cityStatus.textContent = "✔ Ort passt zur PLZ.";
+    cityStatus.style.color = "var(--gold-light)";
+    city.style.borderColor = "var(--gold)";
+    return true;
   }
 
   // STEP 1: Größe wählen
@@ -572,13 +650,19 @@ function setupFormLogic() {
     if (zip.disabled) {
       zip.value = "";
       zipStatus.textContent = "";
+      currentExpectedCity = null;
+
       city.value = "";
       city.disabled = true;
+      resetCityValidation();
+
       email.value = "";
       email.disabled = true;
+
       emailConfirm.value = "";
       emailConfirm.disabled = true;
       emailStatus.textContent = "";
+
       dateToggle.checked = false;
       dateToggle.disabled = true;
       dateInput.value = "";
@@ -595,39 +679,67 @@ function setupFormLogic() {
     zipStatus.textContent = "";
     zipStatus.style.color = "var(--gold-light)";
 
+    currentExpectedCity = null;
+    city.value = "";
+    city.disabled = true;
+    resetCityValidation();
+    email.disabled = true;
+    email.value = "";
+    emailConfirm.value = "";
+    emailConfirm.disabled = true;
+    emailStatus.textContent = "";
+    dateToggle.disabled = true;
+    dateToggle.checked = false;
+    dateInput.disabled = true;
+    dateInput.value = "";
+    dateWrapper.classList.remove("visible");
+    orderBtn.disabled = true;
+
     if (val.length < 5) {
-      city.disabled = true;
-      city.value = "";
       return;
     }
 
     if (!allowedZips.includes(val)) {
-      city.disabled = true;
-      city.value = "";
       zipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
       zipStatus.style.color = "#ff6b6b";
       return;
     }
 
     zipStatus.textContent = "✔ Innerhalb unseres Liefergebiets.";
+    zipStatus.style.color = "var(--gold-light)";
+
+    const mappedCity = getCityByZip(val);
+    currentExpectedCity = mappedCity;
     city.disabled = false;
+
+    if (mappedCity) {
+      city.value = mappedCity;
+      validateCity();
+      email.disabled = false;
+    } else {
+      city.value = "";
+    }
   };
 
   // STEP 5: Ort
   city.oninput = () => {
-    email.disabled = city.value.trim().length < 2;
-    if (email.disabled) {
+    const ok = validateCity();
+    if (!ok) {
+      email.disabled = true;
       email.value = "";
       emailConfirm.value = "";
       emailConfirm.disabled = true;
       emailStatus.textContent = "";
       dateToggle.disabled = true;
       dateToggle.checked = false;
-      dateInput.value = "";
       dateInput.disabled = true;
+      dateInput.value = "";
       dateWrapper.classList.remove("visible");
       orderBtn.disabled = true;
+      return;
     }
+
+    email.disabled = false;
   };
 
   function isValidEmailFormat(mail) {
@@ -656,7 +768,7 @@ function setupFormLogic() {
     const mailConfirm = emailConfirm.value.trim();
 
     if (mail && mail === mailConfirm) {
-      emailStatus.textContent = "✔ E-Mail-Adresse bestätigt";
+      emailStatus.textContent = "✔ E-Mail-Adresse bestätigt.";
       emailStatus.style.color = "var(--gold-light)";
       dateToggle.disabled = false;
       orderBtn.disabled = false;
@@ -696,7 +808,6 @@ function setupOrderSubmit() {
     const dateToggle = document.getElementById("date-toggle").checked;
     const date = document.getElementById("date").value || null;
 
-    // einfache Sicherheit vorne
     if (!size || !name || !street || !zip || !city || !email || !emailConfirm) {
       statusEl.style.color = "#ff6b6b";
       statusEl.textContent = "Bitte füllen Sie alle Pflichtfelder aus.";
@@ -709,6 +820,13 @@ function setupOrderSubmit() {
       return;
     }
 
+    const expectedCity = getCityByZip(zip);
+    if (!expectedCity || normalizeCity(expectedCity) !== normalizeCity(city)) {
+      statusEl.style.color = "#ff6b6b";
+      statusEl.textContent = "Der Ort passt nicht zur eingegebenen PLZ.";
+      return;
+    }
+
     try {
       const resp = await fetch(BACKEND_URL + "/order", {
         method: "POST",
@@ -718,7 +836,7 @@ function setupOrderSubmit() {
           name,
           street,
           zip,
-          city,
+          city: expectedCity,
           email,
           date: dateToggle ? date : null
         })
@@ -737,7 +855,6 @@ function setupOrderSubmit() {
       statusEl.textContent = "Bestellung gespeichert.";
       openOrderModal(data.customerId, email);
 
-      // Felder nicht zwingend leeren – Kundinnen/Kunden können Screenshots machen
     } catch (err) {
       console.error(err);
       statusEl.style.color = "#ff6b6b";
@@ -796,7 +913,8 @@ function setupLookup() {
       const size = data.size || "";
       const street = data.street || "";
       const zip = data.zip || "";
-      const city = data.city || "";
+      const storedCity = data.city || "";
+      const mappedCity = getCityByZip(zip) || storedCity;
       const date = data.date || "";
 
       // Editierbare Karte rendern
@@ -809,21 +927,22 @@ function setupLookup() {
           </p>
 
           <label>Baumgröße</label>
-          <select id="edit-size" style="width:100%; margin-bottom:0.5rem;">
+          <select id="edit-size" style="margin-bottom:0.5rem;">
             <option value="small" ${size === "small" ? "selected" : ""}>Klein – ca. 1,5 m – 60€</option>
             <option value="medium" ${size === "medium" ? "selected" : ""}>Mittel – ca. 1,8 m – 90€</option>
             <option value="large" ${size === "large" ? "selected" : ""}>Groß – ca. 2,1 m – 100€</option>
           </select>
 
           <label>Straße & Hausnummer</label>
-          <input id="edit-street" value="${street}" style="width:100%; margin-bottom:0.5rem;">
+          <input id="edit-street" value="${street}" style="margin-bottom:0.5rem;">
 
           <label>PLZ</label>
-          <input id="edit-zip" value="${zip}" style="width:100%; margin-bottom:0.2rem;">
+          <input id="edit-zip" value="${zip}" style="margin-bottom:0.2rem;">
           <p id="edit-zip-status" class="status"></p>
 
           <label>Ort</label>
-          <input id="edit-city" value="${city}" style="width:100%; margin-bottom:0.5rem;">
+          <input id="edit-city" value="${mappedCity}" style="margin-bottom:0.2rem;">
+          <p id="edit-city-status" class="status"></p>
 
           <div class="toggle-container" style="margin-top:1.2rem;">
             <span>Wunschtermin?</span>
@@ -835,7 +954,7 @@ function setupLookup() {
 
           <div id="edit-date-wrapper">
             <label>Lieferdatum (optional)</label>
-            <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}" style="width:100%; margin-bottom:0.5rem;">
+            <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}" style="margin-bottom:0.5rem;">
             <p class="status" style="font-size:0.85rem;">
               Die genauen Lieferzeiten stehen in Ihrer Bestätigungsmail.
             </p>
@@ -860,6 +979,9 @@ function setupLookup() {
       const editZip = document.getElementById("edit-zip");
       const editZipStatus = document.getElementById("edit-zip-status");
       const editCity = document.getElementById("edit-city");
+      const editCityStatus = document.getElementById("edit-city-status");
+      const editSize = document.getElementById("edit-size");
+      const editStreet = document.getElementById("edit-street");
       const editDateToggle = document.getElementById("edit-date-toggle");
       const editDateWrapper = document.getElementById("edit-date-wrapper");
       const editDateInput = document.getElementById("edit-date");
@@ -875,6 +997,68 @@ function setupLookup() {
         editDateInput.disabled = true;
       }
 
+      function resetEditCityValidation() {
+        editCityStatus.textContent = "";
+        editCityStatus.style.color = "var(--gold-light)";
+        editCity.style.borderColor = "";
+      }
+
+      function validateEditZipAndCity() {
+        const val = editZip.value.trim();
+        resetEditCityValidation();
+        editZipStatus.textContent = "";
+        editZipStatus.style.color = "var(--gold-light)";
+
+        if (!val) {
+          editZipStatus.textContent = "";
+          updateBtn.disabled = true;
+          return false;
+        }
+
+        if (val.length < 5) {
+          updateBtn.disabled = true;
+          return false;
+        }
+
+        if (!allowedZips.includes(val)) {
+          editZipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
+          editZipStatus.style.color = "#ff6b6b";
+          updateBtn.disabled = true;
+          return false;
+        }
+
+        editZipStatus.textContent = "✔ Innerhalb unseres Liefergebiets.";
+        editZipStatus.style.color = "var(--gold-light)";
+
+        const expected = getCityByZip(val);
+        if (expected) {
+          if (!editCity.value) {
+            editCity.value = expected;
+          }
+          const typed = normalizeCity(editCity.value);
+          const expNorm = normalizeCity(expected);
+
+          if (typed !== expNorm) {
+            editCityStatus.textContent = `Der Ort passt nicht zur eingegebenen PLZ (erwartet: „${expected}“).`;
+            editCityStatus.style.color = "#ff6b6b";
+            editCity.style.borderColor = "rgba(255,0,0,0.5)";
+            updateBtn.disabled = true;
+            return false;
+          } else {
+            editCityStatus.textContent = "✔ Ort passt zur PLZ.";
+            editCityStatus.style.color = "var(--gold-light)";
+            editCity.style.borderColor = "var(--gold)";
+          }
+        }
+
+        updateBtn.disabled = false;
+        return true;
+      }
+
+      editZip.addEventListener("input", validateEditZipAndCity);
+      editCity.addEventListener("input", validateEditZipAndCity);
+      validateEditZipAndCity();
+
       editDateToggle.addEventListener("change", () => {
         const visible = editDateToggle.checked;
         editDateWrapper.classList.toggle("visible", visible);
@@ -884,41 +1068,12 @@ function setupLookup() {
         }
       });
 
-      function validateEditZip() {
-        const val = editZip.value.trim();
-        editZipStatus.textContent = "";
-        editZipStatus.style.color = "var(--gold-light)";
-
-        if (val.length === 0) {
-          updateBtn.disabled = false;
-          return;
-        }
-
-        if (val.length < 5) {
-          updateBtn.disabled = true;
-          return;
-        }
-
-        if (!allowedZips.includes(val)) {
-          editZipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
-          editZipStatus.style.color = "#ff6b6b";
-          updateBtn.disabled = true;
-        } else {
-          editZipStatus.textContent = "✔ Innerhalb unseres Liefergebiets.";
-          editZipStatus.style.color = "var(--gold-light)";
-          updateBtn.disabled = false;
-        }
-      }
-
-      editZip.addEventListener("input", validateEditZip);
-      validateEditZip();
-
       // UPDATE
       updateBtn.addEventListener("click", async () => {
-        const newSize = document.getElementById("edit-size").value;
-        const newStreet = document.getElementById("edit-street").value.trim();
-        const newZip = document.getElementById("edit-zip").value.trim();
-        const newCity = document.getElementById("edit-city").value.trim();
+        const newSize = editSize.value;
+        const newStreet = editStreet.value.trim();
+        const newZip = editZip.value.trim();
+        const newCity = editCity.value.trim();
         const newDate = editDateInput.value || null;
 
         if (!newSize || !newStreet || !newZip || !newCity) {
@@ -927,9 +1082,10 @@ function setupLookup() {
           return;
         }
 
-        if (!allowedZips.includes(newZip)) {
+        const expectedCity = getCityByZip(newZip);
+        if (!expectedCity || normalizeCity(expectedCity) !== normalizeCity(newCity)) {
           editStatus.style.color = "#ff6b6b";
-          editStatus.textContent = "Diese PLZ liegt außerhalb unseres Liefergebiets.";
+          editStatus.textContent = "Der Ort passt nicht zur eingegebenen PLZ.";
           return;
         }
 
@@ -946,7 +1102,7 @@ function setupLookup() {
               size: newSize,
               street: newStreet,
               zip: newZip,
-              city: newCity,
+              city: expectedCity,
               date: editDateToggle.checked ? newDate : null
             })
           });
