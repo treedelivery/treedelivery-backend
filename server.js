@@ -148,11 +148,11 @@ app.post("/lookup", async (req, res) => {
   } catch (err) {
     console.error("Fehler in /lookup:", err);
     res.status(500).json({ error: "Serverfehler bei der Suche" });
-	
-	
-	console.log("CLIENT-SUCHT:", email, customerId);
-const doc = await orders.find({}).toArray();
-console.log("DB:", doc);
+
+    // Debug-Zeug unten war eh nie erreichbar, lasse ich unangetastet
+    // console.log("CLIENT-SUCHT:", email, customerId);
+    // const doc = await orders.find({}).toArray();
+    // console.log("DB:", doc);
   }
 });
 
@@ -175,16 +175,16 @@ app.post("/update", async (req, res) => {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-// Kundenmail bei Änderung
-try {
+    // Kundenmail bei Änderung
+    try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
       await sgMail.send({
-        to: data.email,
+        to: email,
         from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung 🎄",
+        subject: "Deine TreeDelivery-Bestellung wurde geändert ✏️🎄",
         text: `
-Hallo ${data.street || "Kunde"},
+Hallo ${street || "Kunde"},
 
 deine Bestellung wurde erfolgreich geändert!
 
@@ -197,11 +197,11 @@ Neue Bestelldaten:
 
 Viele Grüße
 TreeDelivery-Team
-    `.trim()
-  });
-} catch (mailErr) {
-  console.error("Fehler beim Mailversand via SendGrid (Update):", mailErr);
-}
+        `.trim()
+      });
+    } catch (mailErr) {
+      console.error("Fehler beim Mailversand via SendGrid (Update):", mailErr);
+    }
 
     res.json({
       success: true,
@@ -216,9 +216,10 @@ TreeDelivery-Team
 
 // ------- Bestellung löschen -------
 app.post("/delete", async (req, res) => {
-	
-	console.log("DELETE REQUEST ARRIVED");
-console.log("BODY:", req.body);
+
+  console.log("DELETE REQUEST ARRIVED");
+  console.log("BODY:", req.body);
+
   try {
     const { email, customerId } = req.body;
 
@@ -228,16 +229,16 @@ console.log("BODY:", req.body);
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-// Kundenmail bei Stornierung
-try {
+    // Kundenmail bei Stornierung
+    try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
       await sgMail.send({
-        to: data.email,
+        to: email,
         from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung 🎄",
+        subject: "Deine TreeDelivery-Bestellung wurde storniert ❌🎄",
         text: `
-Hallo ${data.street || "Kunde"},
+Hallo ${deleted.value.street || "Kunde"},
 
 deine Bestellung wurde erfolgreich storniert.
 
@@ -247,11 +248,11 @@ Falls dies ein Irrtum war, kannst du jederzeit eine neue Bestellung aufgeben.
 
 Viele Grüße
 TreeDelivery-Team
-    `.trim()
-  });
-} catch (mailErr) {
-  console.error("Fehler beim Mailversand via SendGrid (Delete):", mailErr);
-}
+        `.trim()
+      });
+    } catch (mailErr) {
+      console.error("Fehler beim Mailversand via SendGrid (Delete):", mailErr);
+    }
 
     res.json({ success: true });
 
