@@ -538,8 +538,8 @@ function setupFormLogic() {
   const emailConfirm = document.getElementById("email-confirm");
   const dateToggle = document.getElementById("date-toggle");
   const dateInput = document.getElementById("date");
-  const editDateMin = getTomorrowISO();
-  editDateInput.min = editDateMin;
+  const dateMin = getTomorrowISO();
+dateInput.min = dateMin;
   const dateWrapper = document.getElementById("date-wrapper");
   const orderBtn = document.getElementById("order-btn");
   const priceDisplay = document.getElementById("price-display");
@@ -1001,6 +1001,9 @@ function setupLookup() {
       const editDateToggle = document.getElementById("edit-date-toggle");
       const editDateWrapper = document.getElementById("edit-date-wrapper");
       const editDateInput = document.getElementById("edit-date");
+
+      const editDateMin = getTomorrowISO();
+editDateInput.min = editDateMin;
 
       // Initial Date-Toggle-Zustand
       if (date) {
