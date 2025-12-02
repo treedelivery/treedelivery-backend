@@ -73,6 +73,284 @@ function normalizeCity(str) {
   return (str || "").trim().toLowerCase();
 }
 
+// ------- Datums-Helper -------
+
+/**
+ * Liefert true, wenn das gegebene Datum (YYYY-MM-DD)
+ * frühestens morgen ist. (Heute ist NICHT erlaubt.)
+ */
+function isDateAtLeastTomorrow(dateStr) {
+  if (!dateStr) return true; // kein Datum ist ok
+
+  const today = new Date();
+  const min = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); // morgen 00:00
+  const selected = new Date(dateStr + "T00:00:00");
+
+  return selected >= min;
+}
+
+function formatDateGerman(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr + "T00:00:00");
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}.${month}.${year}`;
+}
+
+// ------- Größe Mappings -------
+
+function mapSizeToShort(size) {
+  switch (size) {
+    case "small":
+      return "S";
+    case "medium":
+      return "M";
+    case "large":
+      return "L";
+    default:
+      return size || "";
+  }
+}
+
+// ------- E-Mail-Templates (HTML) -------
+
+function buildDeliveryLinesHTML(dateStr) {
+  let firstLine;
+
+  if (dateStr) {
+    const formatted = formatDateGerman(dateStr);
+    firstLine = `Ihr Baum wird am <strong>${formatted}</strong> geliefert.`;
+  } else {
+    firstLine = `Ihr Baum wird voraussichtlich <strong>in 2&nbsp;Tagen</strong> geliefert.`;
+  }
+
+  const secondLine =
+    "Sie erhalten kurz vor der Lieferung eine weitere E-Mail mit der genauen Uhrzeit.";
+
+  return `
+    <p>${firstLine}</p>
+    <p>${secondLine}</p>
+  `;
+}
+
+function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, noteAfterCancel = "" }) {
+  const {
+    name,
+    customerId,
+    size,
+    street,
+    zip,
+    city,
+    date
+  } = order;
+
+  const greetingName = name && name.trim() ? name.trim() : "Kundin, Kunde";
+  const sizeShort = mapSizeToShort(size);
+  const dateDisplay = date ? formatDateGerman(date) : "Kein Wunschtermin gewählt";
+
+  const deliveryBlock = buildDeliveryLinesHTML(date);
+
+  const myOrderBlock =
+    "Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf unserer Website <strong>treedelivery.de</strong> unter „Meine Bestellung“ bearbeiten oder stornieren.";
+
+  const paymentBlock = includePaymentInfo
+    ? `<p><strong>Die Bezahlung erfolgt Bar bei Lieferung.</strong></p>`
+    : "";
+
+  const cancelNote = noteAfterCancel
+    ? `<p>${noteAfterCancel}</p>`
+    : "";
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>TreeDelivery</title>
+<style>
+  body {
+    background: #0A0F0A;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', Arial, sans-serif;
+    color: #EDE8D6;
+  }
+
+  .wrapper {
+    width: 100%;
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  .card {
+    background: rgba(20,30,20,0.94);
+    border: 1px solid rgba(216,194,122,0.4);
+    border-radius: 16px;
+    padding: 28px;
+    margin: 0 auto;
+    max-width: 520px;
+    text-align: left;
+  }
+
+  h1 {
+    color: #FBEAB9;
+    font-size: 24px;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #D8C27A;
+    margin-bottom: 24px;
+  }
+
+  .line {
+    border-bottom: 1px dashed rgba(255,255,255,0.18);
+    margin: 24px 0;
+  }
+
+  .data-row {
+    margin: 6px 0;
+    font-size: 14px;
+  }
+
+  .label {
+    color: #FBEAB9;
+    font-weight: 600;
+  }
+
+  .footer {
+    margin-top: 24px;
+    font-size: 13px;
+    color: #D8C27A;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .highlight {
+    color: #FBEAB9;
+    font-weight: 600;
+  }
+
+  .gold-box {
+    margin: 20px 0;
+    background: rgba(216,194,122,0.12);
+    border-left: 4px solid #D8C27A;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .tree-icon {
+    font-size: 36px;
+    text-align: center;
+  }
+
+  p {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+</style>
+</head>
+
+<body>
+<div class="wrapper">
+  <div class="card">
+
+    <div class="tree-icon">🎄</div>
+
+    <h1>${title}</h1>
+    <p class="subtitle">TreeDelivery – Ihr Weihnachtsbaum-Lieferservice</p>
+
+    <p>Guten Tag ${greetingName},</p>
+
+    <p>${intro}</p>
+
+    ${deliveryBlock}
+
+    <div class="line"></div>
+
+    <div class="gold-box">
+      <div class="data-row"><span class="label">Kunden-ID:</span> ${customerId}</div>
+      <div class="data-row"><span class="label">Baumgröße:</span> ${sizeShort}</div>
+      <div class="data-row"><span class="label">Adresse:</span> ${street}, ${zip} ${city}</div>
+      <div class="data-row"><span class="label">Lieferdatum:</span> ${dateDisplay}</div>
+    </div>
+
+    ${myOrderBlock}
+    ${paymentBlock}
+    ${cancelNote}
+
+    <div class="footer">
+      Bitte prüfen Sie auch Ihren <span class="highlight">Spam- bzw. Werbungsordner</span>,<br>
+      falls Sie keine E-Mail im Posteingang finden.
+      <br><br>
+      Mit freundlichen Grüßen<br>
+      <span class="highlight">Ihr TreeDelivery-Team</span>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>`;
+}
+
+function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true, noteAfterCancel = "" }) {
+  const {
+    name,
+    customerId,
+    size,
+    street,
+    zip,
+    city,
+    date
+  } = order;
+
+  const greetingName = name && name.trim() ? name.trim() : "Kundin, Kunde";
+  const sizeShort = mapSizeToShort(size);
+  const dateDisplay = date ? formatDateGerman(date) : "Kein Wunschtermin gewählt";
+
+  const dateLine = date
+    ? `Ihr Baum wird am ${dateDisplay} geliefert.`
+    : `Ihr Baum wird voraussichtlich in 2 Tagen geliefert.`;
+
+  const timeNote = "Sie erhalten kurz vor der Lieferung eine weitere E-Mail mit der genauen Uhrzeit.";
+
+  const myOrder = "Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf unserer Website treedelivery.de unter „Meine Bestellung“ bearbeiten oder stornieren.";
+  const payment = includePaymentInfo ? "Die Bezahlung erfolgt Bar bei Lieferung." : "";
+  const cancel = noteAfterCancel || "";
+
+  return [
+    title,
+    "",
+    `Guten Tag ${greetingName},`,
+    "",
+    intro,
+    "",
+    dateLine,
+    timeNote,
+    "",
+    "Ihre Bestelldaten:",
+    `- Kunden-ID: ${customerId}`,
+    `- Baumgröße: ${sizeShort}`,
+    `- Adresse: ${street}, ${zip} ${city}`,
+    `- Lieferdatum: ${dateDisplay}`,
+    "",
+    myOrder,
+    payment,
+    cancel,
+    "",
+    "Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner, falls Sie keine E-Mail im Posteingang finden.",
+    "",
+    "Mit freundlichen Grüßen",
+    "Ihr TreeDelivery-Team"
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 // ------- Kunden-ID Generator -------
 function generateId() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -110,6 +388,11 @@ app.post("/order", async (req, res) => {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
+    // Datum prüfen (falls gesetzt) – nicht früher als morgen
+    if (date && !isDateAtLeastTomorrow(date)) {
+      return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
+    }
+
     const customerId = generateId();
 
     const order = {
@@ -130,34 +413,20 @@ app.post("/order", async (req, res) => {
     // Bestätigungsmail an Kundin/Kunden schicken
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
-      const greetingName = name || "Kundin, Kunde";
+
+      const emailConfig = {
+        title: "Ihre TreeDelivery-Bestellung ist eingegangen 🎄",
+        intro: "vielen Dank für Ihre Bestellung. Nachfolgend finden Sie Ihre Bestelldetails:",
+        order,
+        includePaymentInfo: true
+      };
 
       await sgMail.send({
         to: email,
         from: fromAddress,
         subject: "Ihre TreeDelivery-Bestellung 🎄",
-        text: `
-Hallo ${greetingName},
-
-vielen Dank für Ihre Bestellung bei TreeDelivery!
-
-Ihre Bestelldaten:
-- Baumgröße: ${size}
-- Straße & Hausnummer: ${street}
-- PLZ / Ort: ${zip} ${expectedCity}
-- Wunschtermin: ${date || "Kein spezieller Termin gewählt"}
-- Kunden-ID: ${customerId}
-
-Mit Ihrer Kunden-ID können Sie Ihre Bestellung später auf unserer Website unter „Meine Bestellung“ aufrufen.
-
-Die Bezahlung erfolgt bar bei Lieferung.
-
-Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
-falls Sie keine E-Mail im Posteingang finden.
-
-Frohe Weihnachten!
-Ihr TreeDelivery-Team
-        `.trim()
+        text: buildPlainTextSummary(emailConfig),
+        html: buildBaseEmailHTML(emailConfig)
       });
 
       // Optional: Kopie an Admin
@@ -234,6 +503,11 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
     }
 
+    // Datum prüfen (falls gesetzt) – nicht früher als morgen
+    if (date && !isDateAtLeastTomorrow(date)) {
+      return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
+    }
+
     console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name });
 
     const updateFields = {
@@ -274,31 +548,20 @@ app.post("/update", async (req, res) => {
     // 3) Bestätigungsmail für Update
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
-      const greetingName = updatedOrder.name || "Kundin, Kunde";
+
+      const emailConfig = {
+        title: "Ihre TreeDelivery-Bestellung wurde aktualisiert 🎄",
+        intro: "wir haben Ihre Bestellung aktualisiert. Nachfolgend finden Sie die aktuellen Bestelldaten:",
+        order: updatedOrder,
+        includePaymentInfo: true
+      };
 
       await sgMail.send({
         to: email,
         from: fromAddress,
         subject: "Ihre TreeDelivery-Bestellung wurde aktualisiert 🎄",
-        text: `
-Hallo ${greetingName},
-
-Ihre TreeDelivery-Bestellung wurde soeben aktualisiert.
-
-Aktuelle Bestelldaten:
-- Kunden-ID: ${customerId}
-- Baumgröße: ${updatedOrder.size}
-- Adresse: ${updatedOrder.street}, ${updatedOrder.zip} ${updatedOrder.city}
-- Lieferdatum: ${updatedOrder.date || "Kein spezieller Termin gewählt"}
-
-Die Bezahlung erfolgt weiterhin bar bei Lieferung.
-
-Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
-falls Sie keine E-Mail im Posteingang finden.
-
-Frohe Weihnachten!
-Ihr TreeDelivery-Team
-        `.trim()
+        text: buildPlainTextSummary(emailConfig),
+        html: buildBaseEmailHTML(emailConfig)
       });
 
       if (process.env.ADMIN_EMAIL) {
@@ -361,31 +624,22 @@ app.post("/delete", async (req, res) => {
     // Storno-Mail
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
-      const greetingName = existing.name || "Kundin, Kunde";
+
+      const emailConfig = {
+        title: "Ihre TreeDelivery-Bestellung wurde storniert 🎄",
+        intro: "wir bestätigen Ihnen hiermit die Stornierung Ihrer Bestellung:",
+        order: existing,
+        includePaymentInfo: false,
+        // zusätzlicher Hinweis: keine Lieferung / keine Zahlung
+        noteAfterCancel: "Es erfolgt keine Lieferung und keine Zahlung mehr."
+      };
 
       await sgMail.send({
         to: email,
         from: fromAddress,
         subject: "Ihre TreeDelivery-Bestellung wurde storniert 🎄",
-        text: `
-Hallo ${greetingName},
-
-Ihre TreeDelivery-Bestellung wurde soeben storniert.
-
-Stornierte Bestellung:
-- Kunden-ID: ${customerId}
-- Baumgröße: ${existing.size}
-- Adresse: ${existing.street}, ${existing.zip} ${existing.city}
-- Lieferdatum: ${existing.date || "kein Termin hinterlegt"}
-
-Es erfolgt keine Lieferung und keine Zahlung mehr.
-
-Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
-falls Sie keine E-Mail im Posteingang finden.
-
-Frohe Weihnachten!
-Ihr TreeDelivery-Team
-        `.trim()
+        text: buildPlainTextSummary(emailConfig),
+        html: buildBaseEmailHTML(emailConfig)
       });
 
       if (process.env.ADMIN_EMAIL) {
