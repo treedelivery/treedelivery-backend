@@ -177,12 +177,14 @@ app.post("/update", async (req, res) => {
 
 // Kundenmail bei Änderung
 try {
-  await sgMail.send({
-    to: email,
-    from: FROM,
-    subject: "Deine TreeDelivery-Bestellung wurde geändert ✏️🎄",
-    text: `
-Hallo ${street || "Kunde"},
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+
+      await sgMail.send({
+        to: data.email,
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung 🎄",
+        text: `
+Hallo ${data.street || "Kunde"},
 
 deine Bestellung wurde erfolgreich geändert!
 
@@ -228,12 +230,14 @@ console.log("BODY:", req.body);
 
 // Kundenmail bei Stornierung
 try {
-  await sgMail.send({
-    to: email,
-    from: FROM,
-    subject: "Deine TreeDelivery-Bestellung wurde storniert ❌🎄",
-    text: `
-Hallo,
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+
+      await sgMail.send({
+        to: data.email,
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung 🎄",
+        text: `
+Hallo ${data.street || "Kunde"},
 
 deine Bestellung wurde erfolgreich storniert.
 
