@@ -247,6 +247,86 @@ Dein TreeDelivery-Team
   }
 });
 
+// ------- Bestellung stornieren -------
+app.post("/delete", async (req, res) => {
+  try {
+    const { email, customerId } = req.body;
+    
+    console.log("Delete-Request:", { email, customerId });
+
+    if (!email || !customerId) {
+      return res.status(400).json({ error: "Fehlende Pflichtfelder" });
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Ungültige E-Mail" });
+    }
+
+    // Bestellung zuerst holen für Mail
+    const existing = await orders.findOne({ email, customerId });
+    console.log("Existing order for delete:", existing);
+
+    if (!existing) {
+      console.log("Keine Bestellung gefunden für:", { email, customerId });
+      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+    }
+
+    const deleteResult = await orders.deleteOne({ email, customerId });
+    console.log("Delete result:", deleteResult);
+
+    if (deleteResult.deletedCount === 0) {
+      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+    }
+
+    // Storno-Mail
+    try {
+      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+
+      await sgMail.send({
+        to: email,
+        from: fromAddress,
+        subject: "Deine TreeDelivery-Bestellung wurde storniert 🎄",
+        text: `
+Hallo ${existing.street || "Kunde"},
+
+deine TreeDelivery-Bestellung wurde soeben storniert.
+
+Stornierte Bestellung:
+- Kunden-ID: ${customerId}
+- Baumgröße: ${existing.size}
+- Adresse: ${existing.street}, ${existing.zip} ${existing.city}
+- Lieferdatum: ${existing.date || "kein Termin hinterlegt"}
+
+Es erfolgt keine Lieferung und keine Zahlung mehr.
+
+Frohe Weihnachten!
+Dein TreeDelivery-Team
+        `.trim()
+      });
+
+      if (process.env.ADMIN_EMAIL) {
+        await sgMail.send({
+          to: process.env.ADMIN_EMAIL,
+          from: fromAddress,
+          subject: `TreeDelivery – Bestellung storniert – ${customerId}`,
+          text: `Stornierte Bestellung:\n\n${JSON.stringify(existing, null, 2)}`
+        });
+      }
+    } catch (mailErr) {
+      console.error("Fehler beim Mailversand (Delete):", mailErr);
+      return res.json({
+        success: true,
+        mailWarning: "Bestellung storniert, aber E-Mail konnte nicht gesendet werden."
+      });
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("Fehler in /delete:", err);
+    res.status(500).json({ error: "Serverfehler bei der Stornierung" });
+  }
+});
 
 
 // ------- Health-Check -------
