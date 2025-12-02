@@ -463,6 +463,13 @@ const zipToCity = {
   "35745": "Herborn"
 };
 
+  function getTomorrowISO() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString().slice(0, 10);
+}
+
 function getCityByZip(zip) {
   return zipToCity[zip] || null;
 }
@@ -531,6 +538,8 @@ function setupFormLogic() {
   const emailConfirm = document.getElementById("email-confirm");
   const dateToggle = document.getElementById("date-toggle");
   const dateInput = document.getElementById("date");
+  const editDateMin = getTomorrowISO();
+  editDateInput.min = editDateMin;
   const dateWrapper = document.getElementById("date-wrapper");
   const orderBtn = document.getElementById("order-btn");
   const priceDisplay = document.getElementById("price-display");
@@ -807,6 +816,13 @@ function setupOrderSubmit() {
     const emailConfirm = document.getElementById("email-confirm").value.trim();
     const dateToggle = document.getElementById("date-toggle").checked;
     const date = document.getElementById("date").value || null;
+
+    const tomorrowStr = getTomorrowISO();
+if (date && date < tomorrowStr) {
+  statusEl.style.color = "#ff6b6b";
+  statusEl.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
+  return;
+}
 
     if (!size || !name || !street || !zip || !city || !email || !emailConfirm) {
       statusEl.style.color = "#ff6b6b";
