@@ -38,6 +38,41 @@ const allowedZips = [
   "35745", "57555", "57399", "57610"
 ];
 
+// ------- PLZ → Ort Mapping -------
+const zipToCity = {
+  "57072": "Siegen",
+  "57074": "Siegen",
+  "57076": "Siegen",
+  "57078": "Siegen",
+  "57080": "Siegen",
+  "57223": "Kreuztal",
+  "57234": "Wilnsdorf",
+  "57250": "Netphen",
+  "57258": "Freudenberg",
+  "57271": "Hilchenbach",
+  "57290": "Neunkirchen",
+  "57299": "Burbach",
+  "57319": "Bad Berleburg",
+  "57334": "Bad Laasphe",
+  "57339": "Erndtebrück",
+  "57555": "Mudersbach",
+  "57399": "Kirchhundem",
+  "57610": "Altenkirchen",
+  "35708": "Haiger",
+  "35683": "Dillenburg",
+  "35684": "Dillenburg",
+  "35685": "Dillenburg",
+  "35745": "Herborn"
+};
+
+function getCityByZip(zip) {
+  return zipToCity[zip] || null;
+}
+
+function normalizeCity(str) {
+  return (str || "").trim().toLowerCase();
+}
+
 // ------- Kunden-ID Generator -------
 function generateId() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -61,6 +96,15 @@ app.post("/order", async (req, res) => {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
 
+    const expectedCity = getCityByZip(zip);
+    if (!expectedCity) {
+      return res.status(400).json({ error: "Zu dieser PLZ ist kein Ort hinterlegt." });
+    }
+
+    if (normalizeCity(expectedCity) !== normalizeCity(city)) {
+      return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
+    }
+
     // E-Mail check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
@@ -74,7 +118,7 @@ app.post("/order", async (req, res) => {
       size,
       street,
       zip,
-      city,
+      city: expectedCity,
       email,
       date: date || null,
       customerId,
@@ -100,7 +144,7 @@ vielen Dank für Ihre Bestellung bei TreeDelivery!
 Ihre Bestelldaten:
 - Baumgröße: ${size}
 - Straße & Hausnummer: ${street}
-- PLZ / Ort: ${zip} ${city}
+- PLZ / Ort: ${zip} ${expectedCity}
 - Wunschtermin: ${date || "Kein spezieller Termin gewählt"}
 - Kunden-ID: ${customerId}
 
@@ -181,13 +225,22 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
 
+    const expectedCity = getCityByZip(zip);
+    if (!expectedCity) {
+      return res.status(400).json({ error: "Zu dieser PLZ ist kein Ort hinterlegt." });
+    }
+
+    if (normalizeCity(expectedCity) !== normalizeCity(city)) {
+      return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
+    }
+
     console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name });
 
     const updateFields = {
       size,
       street,
       zip,
-      city,
+      city: expectedCity,
       date: date || null
     };
 
