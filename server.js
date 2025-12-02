@@ -49,52 +49,70 @@ app.post("/order", async (req, res) => {
     const data = req.body;
     console.log("Neue Bestellung:", data);
 
+    const { name, size, street, zip, city, email, date } = data;
+
+    // Pflichtfelder prüfen
+    if (!name || !size || !street || !zip || !city || !email) {
+      return res.status(400).json({ error: "Fehlende Pflichtfelder." });
+    }
+
     // PLZ check
-    if (!allowedZips.includes(data.zip)) {
-      return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets" });
+    if (!allowedZips.includes(zip)) {
+      return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
 
     // E-Mail check
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-      return res.status(400).json({ error: "Ungültige E-Mail" });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
     const customerId = generateId();
 
     const order = {
       ...data,
+      name,
+      size,
+      street,
+      zip,
+      city,
+      email,
+      date: date || null,
       customerId,
       createdAt: new Date()
     };
 
     await orders.insertOne(order);
 
-    // Bestätigungsmail an Kunden schicken
+    // Bestätigungsmail an Kundin/Kunden schicken
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+      const greetingName = name || "Kundin, Kunde";
 
       await sgMail.send({
-        to: data.email,
+        to: email,
         from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung 🎄",
+        subject: "Ihre TreeDelivery-Bestellung 🎄",
         text: `
-Hallo ${data.street || "Kunde"},
+Hallo ${greetingName},
 
-vielen Dank für deine Bestellung bei TreeDelivery!
+vielen Dank für Ihre Bestellung bei TreeDelivery!
 
-Deine Bestelldaten:
-- Baumgröße: ${data.size}
-- Straße & Hausnummer: ${data.street}
-- PLZ / Ort: ${data.zip} ${data.city}
-- Wunschtermin: ${data.date || "Kein spezieller Termin gewählt"}
+Ihre Bestelldaten:
+- Baumgröße: ${size}
+- Straße & Hausnummer: ${street}
+- PLZ / Ort: ${zip} ${city}
+- Wunschtermin: ${date || "Kein spezieller Termin gewählt"}
 - Kunden-ID: ${customerId}
 
-Mit deiner Kunden-ID kannst du deine Bestellung später auf unserer Website unter "Meine Bestellung" aufrufen.
+Mit Ihrer Kunden-ID können Sie Ihre Bestellung später auf unserer Website unter „Meine Bestellung“ aufrufen.
 
 Die Bezahlung erfolgt bar bei Lieferung.
 
+Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
+falls Sie keine E-Mail im Posteingang finden.
+
 Frohe Weihnachten!
-Dein TreeDelivery-Team
+Ihr TreeDelivery-Team
         `.trim()
       });
 
@@ -121,7 +139,7 @@ Dein TreeDelivery-Team
 
   } catch (err) {
     console.error("Fehler in /order:", err);
-    res.status(500).json({ error: "Serverfehler bei der Bestellung" });
+    res.status(500).json({ error: "Serverfehler bei der Bestellung." });
   }
 });
 
@@ -133,49 +151,55 @@ app.post("/lookup", async (req, res) => {
     const result = await orders.findOne({ email, customerId });
 
     if (!result) {
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     res.json(result);
   } catch (err) {
     console.error("Fehler in /lookup:", err);
-    res.status(500).json({ error: "Serverfehler bei der Suche" });
+    res.status(500).json({ error: "Serverfehler bei der Suche." });
   }
 });
 
 // ------- Bestellung aktualisieren -------
 app.post("/update", async (req, res) => {
   try {
-    const { email, customerId, size, street, zip, city, date } = req.body;
+    const { email, customerId, size, street, zip, city, date, name } = req.body;
 
     // Pflichtfelder prüfen
     if (!email || !customerId || !size || !street || !zip || !city) {
-      return res.status(400).json({ error: "Fehlende Pflichtfelder" });
+      return res.status(400).json({ error: "Fehlende Pflichtfelder." });
     }
 
     // E-Mail Format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Ungültige E-Mail" });
+      return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
     // PLZ im Liefergebiet
     if (!allowedZips.includes(zip)) {
-      return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets" });
+      return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
 
-    console.log("Update-Request:", { email, customerId, size, street, zip, city, date });
+    console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name });
+
+    const updateFields = {
+      size,
+      street,
+      zip,
+      city,
+      date: date || null
+    };
+
+    if (typeof name === "string" && name.trim() !== "") {
+      updateFields.name = name.trim();
+    }
 
     // 1) Update ausführen
     const updateResult = await orders.updateOne(
       { email, customerId },
       {
-        $set: {
-          size,
-          street,
-          zip,
-          city,
-          date: date || null
-        }
+        $set: updateFields
       }
     );
 
@@ -183,7 +207,7 @@ app.post("/update", async (req, res) => {
 
     // Nichts gefunden -> 404
     if (!updateResult.matchedCount || updateResult.matchedCount === 0) {
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     // 2) Aktualisierte Bestellung erneut laden
@@ -191,33 +215,36 @@ app.post("/update", async (req, res) => {
     console.log("Updated order from DB:", updatedOrder);
 
     if (!updatedOrder) {
-      // extrem unwahrscheinlich, aber zur Sicherheit
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     // 3) Bestätigungsmail für Update
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+      const greetingName = updatedOrder.name || "Kundin, Kunde";
 
       await sgMail.send({
         to: email,
         from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung wurde aktualisiert 🎄",
+        subject: "Ihre TreeDelivery-Bestellung wurde aktualisiert 🎄",
         text: `
-Hallo ${street || "Kunde"},
+Hallo ${greetingName},
 
-deine TreeDelivery-Bestellung wurde soeben aktualisiert.
+Ihre TreeDelivery-Bestellung wurde soeben aktualisiert.
 
 Aktuelle Bestelldaten:
 - Kunden-ID: ${customerId}
-- Baumgröße: ${size}
-- Adresse: ${street}, ${zip} ${city}
-- Lieferdatum: ${date || "Kein spezieller Termin gewählt"}
+- Baumgröße: ${updatedOrder.size}
+- Adresse: ${updatedOrder.street}, ${updatedOrder.zip} ${updatedOrder.city}
+- Lieferdatum: ${updatedOrder.date || "Kein spezieller Termin gewählt"}
 
 Die Bezahlung erfolgt weiterhin bar bei Lieferung.
 
+Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
+falls Sie keine E-Mail im Posteingang finden.
+
 Frohe Weihnachten!
-Dein TreeDelivery-Team
+Ihr TreeDelivery-Team
         `.trim()
       });
 
@@ -243,7 +270,7 @@ Dein TreeDelivery-Team
 
   } catch (err) {
     console.error("Fehler in /update:", err);
-    res.status(500).json({ error: "Serverfehler bei der Aktualisierung" });
+    res.status(500).json({ error: "Serverfehler bei der Aktualisierung." });
   }
 });
 
@@ -255,11 +282,11 @@ app.post("/delete", async (req, res) => {
     console.log("Delete-Request:", { email, customerId });
 
     if (!email || !customerId) {
-      return res.status(400).json({ error: "Fehlende Pflichtfelder" });
+      return res.status(400).json({ error: "Fehlende Pflichtfelder." });
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Ungültige E-Mail" });
+      return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
     // Bestellung zuerst holen für Mail
@@ -268,28 +295,29 @@ app.post("/delete", async (req, res) => {
 
     if (!existing) {
       console.log("Keine Bestellung gefunden für:", { email, customerId });
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     const deleteResult = await orders.deleteOne({ email, customerId });
     console.log("Delete result:", deleteResult);
 
     if (deleteResult.deletedCount === 0) {
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+      return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
     // Storno-Mail
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
+      const greetingName = existing.name || "Kundin, Kunde";
 
       await sgMail.send({
         to: email,
         from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung wurde storniert 🎄",
+        subject: "Ihre TreeDelivery-Bestellung wurde storniert 🎄",
         text: `
-Hallo ${existing.street || "Kunde"},
+Hallo ${greetingName},
 
-deine TreeDelivery-Bestellung wurde soeben storniert.
+Ihre TreeDelivery-Bestellung wurde soeben storniert.
 
 Stornierte Bestellung:
 - Kunden-ID: ${customerId}
@@ -299,8 +327,11 @@ Stornierte Bestellung:
 
 Es erfolgt keine Lieferung und keine Zahlung mehr.
 
+Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner,
+falls Sie keine E-Mail im Posteingang finden.
+
 Frohe Weihnachten!
-Dein TreeDelivery-Team
+Ihr TreeDelivery-Team
         `.trim()
       });
 
@@ -324,7 +355,7 @@ Dein TreeDelivery-Team
 
   } catch (err) {
     console.error("Fehler in /delete:", err);
-    res.status(500).json({ error: "Serverfehler bei der Stornierung" });
+    res.status(500).json({ error: "Serverfehler bei der Stornierung." });
   }
 });
 
