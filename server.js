@@ -163,6 +163,10 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets" });
     }
 
+    // Logging für Debug
+    console.log("Update-Request:", { email, customerId, size, street, zip, city });
+
+    // Robuste findOneAndUpdate mit Fallback für verschiedene Treiber-Versionen
     const result = await orders.findOneAndUpdate(
       { email, customerId },
       {
@@ -175,17 +179,38 @@ app.post("/update", async (req, res) => {
         }
       },
       {
-        // wichtig für ältere Treiber: aktualisiertes Dokument zurückgeben
+        // Für MongoDB Driver v4+: returnDocument: "after"
+        // Für MongoDB Driver v3.x: returnOriginal: false
+        // Beide zusammen für maximale Kompatibilität
         returnDocument: "after",
         returnOriginal: false
       }
     );
 
-    if (!result.value) {
+    console.log("Update-Result:", result);
+
+    // Prüfen, ob Update erfolgreich war (mehrere Wege je nach Treiber)
+    let updatedOrder = null;
+    let updateSuccessful = false;
+
+    if (result.value) {
+      // Erfolgreich: aktualisiertes Dokument vorhanden
+      updatedOrder = result.value;
+      updateSuccessful = true;
+    } else if (result.matchedCount && result.matchedCount > 0) {
+      // Fallback: Dokument gefunden und aktualisiert, aber value ist null (älterer Treiber)
+      // Hole das aktualisierte Dokument nochmal
+      updatedOrder = await orders.findOne({ email, customerId });
+      updateSuccessful = !!updatedOrder;
+      console.log("Fallback: Dokument nach Update geholt:", updatedOrder);
+    } else {
+      // Kein Dokument gefunden
       return res.status(404).json({ error: "Keine Bestellung gefunden" });
     }
 
-    const updatedOrder = result.value;
+    if (!updateSuccessful) {
+      return res.status(404).json({ error: "Keine Bestellung gefunden" });
+    }
 
     // Bestätigungsmail für Update
     try {
@@ -238,81 +263,6 @@ Dein TreeDelivery-Team
   }
 });
 
-// ------- Bestellung stornieren -------
-app.post("/delete", async (req, res) => {
-  try {
-    const { email, customerId } = req.body;
-
-    if (!email || !customerId) {
-      return res.status(400).json({ error: "Fehlende Pflichtfelder" });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return res.status(400).json({ error: "Ungültige E-Mail" });
-    }
-
-    // Bestellung zuerst holen, damit sie für die Mail vorliegt
-    const existing = await orders.findOne({ email, customerId });
-
-    if (!existing) {
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
-    }
-
-    const deleteResult = await orders.deleteOne({ email, customerId });
-
-    if (deleteResult.deletedCount === 0) {
-      return res.status(404).json({ error: "Keine Bestellung gefunden" });
-    }
-
-    // Bestätigungsmail für Storno
-    try {
-      const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
-
-      await sgMail.send({
-        to: email,
-        from: fromAddress,
-        subject: "Deine TreeDelivery-Bestellung wurde storniert 🎄",
-        text: `
-Hallo ${existing.street || "Kunde"},
-
-deine TreeDelivery-Bestellung wurde soeben storniert.
-
-Stornierte Bestellung:
-- Kunden-ID: ${customerId}
-- Baumgröße: ${existing.size}
-- Adresse: ${existing.street}, ${existing.zip} ${existing.city}
-- Lieferdatum: ${existing.date || "kein Termin hinterlegt"}
-
-Es erfolgt keine Lieferung und keine Zahlung mehr.
-
-Frohe Weihnachten!
-Dein TreeDelivery-Team
-        `.trim()
-      });
-
-      if (process.env.ADMIN_EMAIL) {
-        await sgMail.send({
-          to: process.env.ADMIN_EMAIL,
-          from: fromAddress,
-          subject: `TreeDelivery – Bestellung storniert – ${customerId}`,
-          text: `Stornierte Bestellung:\n\n${JSON.stringify(existing, null, 2)}`
-        });
-      }
-    } catch (mailErr) {
-      console.error("Fehler beim Mailversand (Delete):", mailErr);
-      return res.json({
-        success: true,
-        mailWarning: "Bestellung storniert, aber E-Mail konnte nicht gesendet werden."
-      });
-    }
-
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error("Fehler in /delete:", err);
-    res.status(500).json({ error: "Serverfehler bei der Stornierung" });
-  }
-});
 
 // ------- Health-Check -------
 app.get("/", (req, res) => {
