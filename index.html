@@ -13,12 +13,8 @@
       --gold: #D8C27A;
       --gold-light: #FBEAB9;
       --soft: #EDE8D6;
-      --input-width: 100%;
+      --input-width: 90%;
       font-family: 'Inter', sans-serif;
-    }
-
-    * {
-      box-sizing: border-box;
     }
 
     body {
@@ -28,7 +24,6 @@
       line-height: 1.6;
       overflow-x: hidden;
       font-family: 'Inter', sans-serif;
-      font-size: 16px;
     }
 
     [disabled] {
@@ -49,7 +44,7 @@
     header {
       background: linear-gradient(140deg, #0B120C, #0F2A18, #0A0F0A);
       color: var(--gold-light);
-      padding: 1.8rem 1.2rem 1.6rem;
+      padding: 2rem 1.2rem 1.5rem;
       text-align: center;
       border-bottom-left-radius: 2rem;
       border-bottom-right-radius: 2rem;
@@ -60,23 +55,17 @@
       filter: drop-shadow(0 0 10px var(--gold-light));
     }
 
-    header p {
-      margin-top: 0.7rem;
-      font-size: 0.95rem;
-    }
-
     .nav-tabs {
       display: flex;
       justify-content: center;
-      margin: 1.5rem auto 1rem;
+      margin: 2rem auto;
       max-width: 700px;
-      gap: 0.7rem;
-      padding: 0 1rem;
+      gap: 1rem;
     }
 
     .nav-tabs button {
       flex: 1;
-      padding: 0.7rem 0.9rem;
+      padding: 1rem;
       border-radius: 999px;
       border: 2px solid var(--gold);
       background: transparent;
@@ -84,8 +73,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: 0.25s;
-      font-size: 0.95rem;
-      white-space: nowrap;
+      font-size: 1.05rem;
     }
 
     .nav-tabs button.active {
@@ -95,54 +83,42 @@
     }
 
     .card {
-      background: rgba(15,26,15,0.9);
+      background: rgba(15,26,15,0.85);
       border: 1px solid rgba(216,194,122,0.25);
       backdrop-filter: blur(6px);
       border-radius: 1.4rem;
-      padding: 1.6rem 1.4rem 1.8rem;
-      margin: 1rem auto 1.6rem;
-      max-width: 520px;
+      padding: 2rem 1.8rem;
+      margin: 2rem auto;
+      max-width: 500px;
       overflow: hidden;
-      width: calc(100% - 2rem);
     }
 
     h2 {
       color: var(--gold-light);
-      font-size: 1.4rem;
-      margin-bottom: 1.1rem;
+      font-size: 1.8rem;
+      margin-bottom: 1.6rem;
     }
 
     label {
       display: block;
       font-weight: 600;
       color: var(--gold-light);
-      margin-top: 0.9rem;
-      font-size: 0.95rem;
+      margin-top: 1.1rem;
     }
 
-    input,
-    select,
-    textarea {
+    input, select {
       width: var(--input-width);
-      padding: 0.8rem 0.9rem;
+      padding: 0.85rem 1rem;
       border-radius: 0.7rem;
       border: 1px solid rgba(255,255,255,0.25);
       background: rgba(255,255,255,0.05);
       color: var(--soft);
-      font-size: 0.95rem;
-      margin-top: 0.3rem;
+      font-size: 1.05rem;
+      margin-top: .3rem;
       transition: 0.25s;
-      font-family: inherit;
     }
 
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
+    input:focus, select:focus {
       border-color: var(--gold);
       background: rgba(255,255,255,0.1);
       box-shadow: 0 0 10px rgba(255,255,160,0.25);
@@ -151,11 +127,11 @@
     }
 
     .btn {
-      padding: 0.85rem 1.3rem;
+      padding: 0.9rem 1.3rem;
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 1.05rem;
       transition: 0.25s;
       margin-top: 1rem;
       font-weight: 600;
@@ -175,19 +151,16 @@
     }
 
     .toggle-container {
-      margin-top: 1.3rem;
+      margin-top: 1.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.7rem;
-      font-size: 0.95rem;
     }
 
     .toggle {
       position: relative;
-      width: 52px;
-      height: 28px;
-      flex-shrink: 0;
+      width: 56px;
+      height: 30px;
     }
 
     .toggle input { opacity: 0; width: 0; height: 0; }
@@ -205,7 +178,7 @@
     .slider:before {
       content: "";
       position: absolute;
-      width: 20px; height: 20px;
+      width: 22px; height: 22px;
       left: 4px; bottom: 3px;
       background: var(--gold);
       border-radius: 50%;
@@ -217,77 +190,43 @@
     }
 
     .toggle input:checked + .slider:before {
-      transform: translateX(22px);
+      transform: translateX(26px);
       background: var(--dark);
     }
 
     #date-wrapper,
-    #edit-date-wrapper,
-    #special-wrapper {
+    #edit-date-wrapper {
       display: none;
       opacity: 0;
       transition: 0.3s ease;
     }
 
     #date-wrapper.visible,
-    #edit-date-wrapper.visible,
-    #special-wrapper.visible {
+    #edit-date-wrapper.visible {
       display: block;
       opacity: 1;
     }
 
     .status {
-      margin-top: 0.4rem;
-      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
     }
 
     #price-display {
-      margin-top: 1.1rem;
-      font-size: 1.1rem;
-      color: var(--gold-light);
-      font-weight: 600;
+      margin-top:1.2rem;
+      font-size:1.2rem;
+      color:var(--gold-light);
+      font-weight:600;
     }
 
     #order-status {
-      margin-top: 0.7rem;
+      margin-top: 0.8rem;
       min-height: 1.2rem;
     }
 
     pre {
       white-space: pre-wrap;
       word-break: break-word;
-    }
-
-    .info-row {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin-top: 0.9rem;
-    }
-
-    .info-row label {
-      margin-top: 0;
-    }
-
-    .info-icon {
-      width: 18px;
-      height: 18px;
-      border-radius: 999px;
-      border: 1px solid var(--gold);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.7rem;
-      color: var(--gold-light);
-      cursor: pointer;
-      flex-shrink: 0;
-      background: rgba(255,255,255,0.05);
-    }
-
-    #customer-id-hint {
-      display: none;
-      margin-top: 0.3rem;
-      color: var(--soft);
     }
 
     /* Modal für Bestellbestätigung */
@@ -308,30 +247,29 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
     }
 
     .modal {
       background: rgba(15,26,15,0.97);
       border-radius: 1.5rem;
-      padding: 1.7rem 1.6rem 1.9rem;
+      padding: 2rem 2.2rem;
       max-width: 420px;
-      width: 100%;
+      width: 90%;
       text-align: center;
       border: 1px solid rgba(216,194,122,0.6);
       box-shadow: 0 20px 50px rgba(0,0,0,0.7);
     }
 
     .modal-title {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       color: var(--gold-light);
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.7rem;
     }
 
     .modal-subtitle {
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: var(--soft);
-      margin-bottom: 1.1rem;
+      margin-bottom: 1.2rem;
     }
 
     .modal-highlight {
@@ -340,49 +278,27 @@
     }
 
     .modal-icon {
-      font-size: 2.5rem;
+      font-size: 3rem;
       display: inline-block;
-      margin-bottom: 0.7rem;
+      margin-bottom: 0.8rem;
       animation: pop-in 0.8s ease-out forwards;
       transform-origin: center;
     }
 
     .modal-note {
-      font-size: 0.85rem;
-      margin-top: 0.9rem;
+      font-size: 0.9rem;
+      margin-top: 1rem;
       color: var(--gold-light);
     }
 
     .btn-modal {
-      margin-top: 1.3rem;
-      width: 100%;
+      margin-top: 1.5rem;
     }
 
     @keyframes pop-in {
       0% { transform: scale(0.3); opacity: 0; }
-      60% { transform: scale(1.08); opacity: 1; }
+      60% { transform: scale(1.1); opacity: 1; }
       100% { transform: scale(1); opacity: 1; }
-    }
-
-    @media (max-width: 600px) {
-      .nav-tabs {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .nav-tabs button {
-        font-size: 0.95rem;
-      }
-      .card {
-        padding: 1.4rem 1.2rem 1.6rem;
-      }
-      input,
-      select,
-      textarea {
-        font-size: 1rem;
-      }
-      header p {
-        font-size: 0.9rem;
-      }
     }
   </style>
 </head>
@@ -412,9 +328,9 @@
       <label>Baumgröße *</label>
       <select id="size">
         <option value="">Bitte wählen…</option>
-        <option value="small" data-price="60">S – ca. 1,5 m – 60€</option>
-        <option value="medium" data-price="90">M – ca. 1,8 m – 90€</option>
-        <option value="large" data-price="100">L – ca. 2,1 m – 100€</option>
+        <option value="small" data-price="60">Klein – ca. 1,5 m – 60€</option>
+        <option value="medium" data-price="90">Mittel – ca. 1,8 m – 90€</option>
+        <option value="large" data-price="100">Groß – ca. 2,1 m – 100€</option>
       </select>
 
       <label>Name *</label>
@@ -454,19 +370,6 @@
         </p>
       </div>
 
-      <div class="toggle-container">
-        <span>Spezielle Wünsche?</span>
-        <label class="toggle">
-          <input type="checkbox" id="special-toggle" disabled>
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div id="special-wrapper">
-        <label>Spezielle Wünsche (optional)</label>
-        <textarea id="special-requests" disabled placeholder="Zum Beispiel: Bitte nach 17 Uhr liefern, Baum kürzen, Zugang über Hintereingang, ..."></textarea>
-      </div>
-
       <p id="price-display">Preis: —</p>
       <p style="font-size:0.9rem; color:var(--gold); margin-top:0.3rem;">
         Die Bezahlung erfolgt bar bei Lieferung.
@@ -487,16 +390,8 @@
       <label>E-Mail *</label>
       <input id="lookup-email" type="email">
 
-      <div class="info-row">
-        <label for="lookup-id">Kunden-ID *</label>
-        <div class="info-icon" id="customer-id-info">i</div>
-      </div>
+      <label>Kunden-ID *</label>
       <input id="lookup-id">
-
-      <p id="customer-id-hint" class="status">
-        Sie finden Ihre Kunden-ID in der E-Mail, die Sie nach Ihrer Bestellung erhalten haben.
-        Bitte prüfen Sie gegebenenfalls auch Ihren Spam- oder Werbungsordner.
-      </p>
 
       <button class="btn btn-primary" type="submit">Bestellung suchen</button>
       <p id="lookup-status" class="status"></p>
@@ -576,18 +471,6 @@ function normalizeCity(str) {
   return (str || "").trim().toLowerCase();
 }
 
-function getTomorrowISO() {
-  const d = new Date();
-  d.setDate(d.getDate() + 1);
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
-}
-
-// Hardcoded: 24.12.2025
-function getMaxDateISO() {
-  return "2025-12-24";
-}
-
 // ------- Tabs & Initialisierung -------
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll('.nav-tabs button');
@@ -613,16 +496,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (modalClose) {
     modalClose.addEventListener("click", () => {
       document.getElementById("order-modal").classList.add("modal-hidden");
-    });
-  }
-
-  // Info-Icon Kunden-ID
-  const infoIcon = document.getElementById("customer-id-info");
-  const idHint = document.getElementById("customer-id-hint");
-  if (infoIcon && idHint) {
-    infoIcon.addEventListener("click", () => {
-      const isVisible = idHint.style.display === "block";
-      idHint.style.display = isVisible ? "none" : "block";
     });
   }
 
@@ -659,9 +532,6 @@ function setupFormLogic() {
   const dateToggle = document.getElementById("date-toggle");
   const dateInput = document.getElementById("date");
   const dateWrapper = document.getElementById("date-wrapper");
-  const specialToggle = document.getElementById("special-toggle");
-  const specialWrapper = document.getElementById("special-wrapper");
-  const specialInput = document.getElementById("special-requests");
   const orderBtn = document.getElementById("order-btn");
   const priceDisplay = document.getElementById("price-display");
   const zipStatus = document.getElementById("zip-status");
@@ -669,12 +539,6 @@ function setupFormLogic() {
   const emailStatus = document.getElementById("email-status");
 
   let currentExpectedCity = null;
-
-  // Datum-Grenzen setzen
-  const dateMin = getTomorrowISO();
-  const dateMax = getMaxDateISO();
-  dateInput.min = dateMin;
-  dateInput.max = dateMax;
 
   // Start: alles deaktiviert außer Größe
   nameInput.disabled = true;
@@ -686,8 +550,6 @@ function setupFormLogic() {
   dateToggle.disabled = true;
   dateInput.disabled = true;
   orderBtn.disabled = true;
-  specialToggle.disabled = true;
-  specialInput.disabled = true;
 
   function resetAfterName() {
     street.value = "";
@@ -717,12 +579,6 @@ function setupFormLogic() {
     dateInput.value = "";
     dateInput.disabled = true;
     dateWrapper.classList.remove("visible");
-
-    specialToggle.checked = false;
-    specialToggle.disabled = true;
-    specialInput.value = "";
-    specialInput.disabled = true;
-    specialWrapper.classList.remove("visible");
 
     orderBtn.disabled = true;
   }
@@ -757,7 +613,8 @@ function setupFormLogic() {
       return false;
     }
 
-    cityStatus.textContent = "";
+    cityStatus.textContent = "✔ Ort passt zur PLZ.";
+    cityStatus.style.color = "var(--gold-light)";
     city.style.borderColor = "var(--gold)";
     return true;
   }
@@ -811,13 +668,6 @@ function setupFormLogic() {
       dateInput.value = "";
       dateInput.disabled = true;
       dateWrapper.classList.remove("visible");
-
-      specialToggle.checked = false;
-      specialToggle.disabled = true;
-      specialInput.value = "";
-      specialInput.disabled = true;
-      specialWrapper.classList.remove("visible");
-
       orderBtn.disabled = true;
     }
   };
@@ -843,11 +693,6 @@ function setupFormLogic() {
     dateInput.disabled = true;
     dateInput.value = "";
     dateWrapper.classList.remove("visible");
-    specialToggle.disabled = true;
-    specialToggle.checked = false;
-    specialInput.disabled = true;
-    specialInput.value = "";
-    specialWrapper.classList.remove("visible");
     orderBtn.disabled = true;
 
     if (val.length < 5) {
@@ -890,11 +735,6 @@ function setupFormLogic() {
       dateInput.disabled = true;
       dateInput.value = "";
       dateWrapper.classList.remove("visible");
-      specialToggle.disabled = true;
-      specialToggle.checked = false;
-      specialInput.disabled = true;
-      specialInput.value = "";
-      specialWrapper.classList.remove("visible");
       orderBtn.disabled = true;
       return;
     }
@@ -918,7 +758,6 @@ function setupFormLogic() {
       emailConfirm.disabled = true;
       orderBtn.disabled = true;
       dateToggle.disabled = true;
-      specialToggle.disabled = true;
       emailStatus.textContent = "";
     }
   };
@@ -932,13 +771,11 @@ function setupFormLogic() {
       emailStatus.textContent = "✔ E-Mail-Adresse bestätigt.";
       emailStatus.style.color = "var(--gold-light)";
       dateToggle.disabled = false;
-      specialToggle.disabled = false;
       orderBtn.disabled = false;
     } else {
       emailStatus.textContent = "❌ Die E-Mail-Adressen stimmen nicht überein.";
       emailStatus.style.color = "#ff6b6b";
       dateToggle.disabled = true;
-      specialToggle.disabled = true;
       orderBtn.disabled = true;
     }
   };
@@ -948,13 +785,6 @@ function setupFormLogic() {
     const visible = dateToggle.checked;
     dateWrapper.classList.toggle("visible", visible);
     dateInput.disabled = !visible;
-  };
-
-  // Spezielle Wünsche Toggle
-  specialToggle.onchange = () => {
-    const visible = specialToggle.checked;
-    specialWrapper.classList.toggle("visible", visible);
-    specialInput.disabled = !visible;
   };
 }
 
@@ -977,8 +807,6 @@ function setupOrderSubmit() {
     const emailConfirm = document.getElementById("email-confirm").value.trim();
     const dateToggle = document.getElementById("date-toggle").checked;
     const date = document.getElementById("date").value || null;
-    const specialToggle = document.getElementById("special-toggle").checked;
-    const specialRequests = document.getElementById("special-requests").value.trim();
 
     if (!size || !name || !street || !zip || !city || !email || !emailConfirm) {
       statusEl.style.color = "#ff6b6b";
@@ -999,22 +827,6 @@ function setupOrderSubmit() {
       return;
     }
 
-    const tomorrowStr = getTomorrowISO();
-    const maxStr = getMaxDateISO();
-
-    if (dateToggle && date) {
-      if (date < tomorrowStr) {
-        statusEl.style.color = "#ff6b6b";
-        statusEl.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
-        return;
-      }
-      if (date > maxStr) {
-        statusEl.style.color = "#ff6b6b";
-        statusEl.textContent = "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen.";
-        return;
-      }
-    }
-
     try {
       const resp = await fetch(BACKEND_URL + "/order", {
         method: "POST",
@@ -1026,8 +838,7 @@ function setupOrderSubmit() {
           zip,
           city: expectedCity,
           email,
-          date: dateToggle ? date : null,
-          specialRequests: specialToggle && specialRequests ? specialRequests : null
+          date: dateToggle ? date : null
         })
       });
 
@@ -1039,6 +850,7 @@ function setupOrderSubmit() {
         return;
       }
 
+      // Erfolg
       statusEl.style.color = "#7CFF93";
       statusEl.textContent = "Bestellung gespeichert.";
       openOrderModal(data.customerId, email);
@@ -1104,8 +916,8 @@ function setupLookup() {
       const storedCity = data.city || "";
       const mappedCity = getCityByZip(zip) || storedCity;
       const date = data.date || "";
-      const specialRequests = data.specialRequests || "";
 
+      // Editierbare Karte rendern
       resultEl.innerHTML = `
         <div style="border-top:1px solid rgba(216,194,122,0.4); padding-top:1rem; margin-top:1rem;">
           <p style="font-size:0.9rem; color:var(--gold-light);">
@@ -1116,9 +928,9 @@ function setupLookup() {
 
           <label>Baumgröße</label>
           <select id="edit-size" style="margin-bottom:0.5rem;">
-            <option value="small" ${size === "small" ? "selected" : ""}>S – ca. 1,5 m – 60€</option>
-            <option value="medium" ${size === "medium" ? "selected" : ""}>M – ca. 1,8 m – 90€</option>
-            <option value="large" ${size === "large" ? "selected" : ""}>L – ca. 2,1 m – 100€</option>
+            <option value="small" ${size === "small" ? "selected" : ""}>Klein – ca. 1,5 m – 60€</option>
+            <option value="medium" ${size === "medium" ? "selected" : ""}>Mittel – ca. 1,8 m – 90€</option>
+            <option value="large" ${size === "large" ? "selected" : ""}>Groß – ca. 2,1 m – 100€</option>
           </select>
 
           <label>Straße & Hausnummer</label>
@@ -1132,7 +944,7 @@ function setupLookup() {
           <input id="edit-city" value="${mappedCity}" style="margin-bottom:0.2rem;">
           <p id="edit-city-status" class="status"></p>
 
-          <div class="toggle-container" style="margin-top:1.1rem;">
+          <div class="toggle-container" style="margin-top:1.2rem;">
             <span>Wunschtermin?</span>
             <label class="toggle">
               <input type="checkbox" id="edit-date-toggle">
@@ -1142,14 +954,11 @@ function setupLookup() {
 
           <div id="edit-date-wrapper">
             <label>Lieferdatum (optional)</label>
-            <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}">
+            <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}" style="margin-bottom:0.5rem;">
             <p class="status" style="font-size:0.85rem;">
               Die genauen Lieferzeiten stehen in Ihrer Bestätigungsmail.
             </p>
           </div>
-
-          <label style="margin-top:1.1rem;">Spezielle Wünsche (optional)</label>
-          <textarea id="edit-special-requests" style="margin-top:0.3rem;">${specialRequests}</textarea>
 
           <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
             <button type="button" class="btn btn-primary" id="update-btn">Änderungen speichern</button>
@@ -1176,13 +985,6 @@ function setupLookup() {
       const editDateToggle = document.getElementById("edit-date-toggle");
       const editDateWrapper = document.getElementById("edit-date-wrapper");
       const editDateInput = document.getElementById("edit-date");
-      const editSpecialRequests = document.getElementById("edit-special-requests");
-
-      // Datum-Grenzen
-      const editDateMin = getTomorrowISO();
-      const editDateMax = getMaxDateISO();
-      editDateInput.min = editDateMin;
-      editDateInput.max = editDateMax;
 
       // Initial Date-Toggle-Zustand
       if (date) {
@@ -1208,6 +1010,7 @@ function setupLookup() {
         editZipStatus.style.color = "var(--gold-light)";
 
         if (!val) {
+          editZipStatus.textContent = "";
           updateBtn.disabled = true;
           return false;
         }
@@ -1242,8 +1045,9 @@ function setupLookup() {
             updateBtn.disabled = true;
             return false;
           } else {
-    cityStatus.textContent = "";
-    city.style.borderColor = "var(--gold)";
+            editCityStatus.textContent = "✔ Ort passt zur PLZ.";
+            editCityStatus.style.color = "var(--gold-light)";
+            editCity.style.borderColor = "var(--gold)";
           }
         }
 
@@ -1271,7 +1075,6 @@ function setupLookup() {
         const newZip = editZip.value.trim();
         const newCity = editCity.value.trim();
         const newDate = editDateInput.value || null;
-        const newSpecial = editSpecialRequests.value.trim();
 
         if (!newSize || !newStreet || !newZip || !newCity) {
           editStatus.style.color = "#ff6b6b";
@@ -1284,22 +1087,6 @@ function setupLookup() {
           editStatus.style.color = "#ff6b6b";
           editStatus.textContent = "Der Ort passt nicht zur eingegebenen PLZ.";
           return;
-        }
-
-        const tomorrowStr = getTomorrowISO();
-        const maxStr = getMaxDateISO();
-
-        if (editDateToggle.checked && newDate) {
-          if (newDate < tomorrowStr) {
-            editStatus.style.color = "#ff6b6b";
-            editStatus.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
-            return;
-          }
-          if (newDate > maxStr) {
-            editStatus.style.color = "#ff6b6b";
-            editStatus.textContent = "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen.";
-            return;
-          }
         }
 
         editStatus.style.color = "var(--gold-light)";
@@ -1316,8 +1103,7 @@ function setupLookup() {
               street: newStreet,
               zip: newZip,
               city: expectedCity,
-              date: editDateToggle.checked ? newDate : null,
-              specialRequests: newSpecial || null
+              date: editDateToggle.checked ? newDate : null
             })
           });
 
