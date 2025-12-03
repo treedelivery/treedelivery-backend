@@ -73,24 +73,20 @@ function normalizeCity(str) {
   return (str || "").trim().toLowerCase();
 }
 
-// ------- Datum-Helper -------
+// ------- Datums-Helper -------
 
-// max Lieferdatum: 24.12.2025
-const DELIVERY_MAX_DATE_STR = "2025-12-24";
-
+/**
+ * Liefert true, wenn das gegebene Datum (YYYY-MM-DD)
+ * frühestens morgen ist. (Heute ist NICHT erlaubt.)
+ */
 function isDateAtLeastTomorrow(dateStr) {
-  if (!dateStr) return true; // kein Datum ist erlaubt
-  const today = new Date();
-  const min = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  const selected = new Date(dateStr + "T00:00:00");
-  return selected >= min;
-}
+  if (!dateStr) return true; // kein Datum ist ok
 
-function isDateNotAfterMax(dateStr) {
-  if (!dateStr) return true;
+  const today = new Date();
+  const min = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1); // morgen 00:00
   const selected = new Date(dateStr + "T00:00:00");
-  const max = new Date(DELIVERY_MAX_DATE_STR + "T23:59:59");
-  return selected <= max;
+
+  return selected >= min;
 }
 
 function formatDateGerman(dateStr) {
@@ -117,26 +113,7 @@ function mapSizeToShort(size) {
   }
 }
 
-// ------- Stornofrist: bis 24h vor Lieferung -------
-
-function getPlannedDeliveryDate(order) {
-  if (order.date) {
-    return new Date(order.date + "T00:00:00");
-  }
-  const created = new Date(order.createdAt || new Date());
-  const planned = new Date(created.getTime());
-  planned.setDate(planned.getDate() + 2);
-  return planned;
-}
-
-function isCancelableNow(order) {
-  const deliveryDate = getPlannedDeliveryDate(order);
-  const cutoff = new Date(deliveryDate.getTime() - 24 * 60 * 60 * 1000);
-  const now = new Date();
-  return now <= cutoff;
-}
-
-// ------- E-Mail-Templates (HTML, hell, hoher Kontrast) -------
+// ------- E-Mail-Templates (HTML) -------
 
 function buildDeliveryLinesHTML(dateStr) {
   let firstLine;
@@ -157,7 +134,7 @@ function buildDeliveryLinesHTML(dateStr) {
   `;
 }
 
-function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, includeCancelRule = true, noteAfterCancel = "" }) {
+function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, noteAfterCancel = "" }) {
   const {
     name,
     customerId,
@@ -165,8 +142,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     street,
     zip,
     city,
-    date,
-    specialRequests
+    date
   } = order;
 
   const greetingName = name && name.trim() ? name.trim() : "Kundin, Kunde";
@@ -182,14 +158,6 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     ? `<p><strong>Die Bezahlung erfolgt Bar bei Lieferung.</strong></p>`
     : "";
 
-  const cancelRuleBlock = includeCancelRule
-    ? `<p>Sie können Ihre Bestellung bis spätestens <strong>24 Stunden vor dem Liefertermin</strong> stornieren.</p>`
-    : "";
-
-  const specialBlock = specialRequests
-    ? `<p class="data-row"><span class="label">Spezielle Wünsche:</span><br>${String(specialRequests).replace(/\n/g, "<br>")}</p>`
-    : "";
-
   const cancelNote = noteAfterCancel
     ? `<p>${noteAfterCancel}</p>`
     : "";
@@ -199,14 +167,13 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
 <head>
 <meta charset="UTF-8">
 <title>TreeDelivery</title>
-<meta name="color-scheme" content="light">
 <style>
   body {
+    background: #0A0F0A;
     margin: 0;
     padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #f5f5f5;
-    color: #222222;
+    font-family: 'Inter', Arial, sans-serif;
+    color: #EDE8D6;
   }
 
   .wrapper {
@@ -216,33 +183,32 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
   }
 
   .card {
-    background: #ffffff;
-    border: 1px solid #e2e2e2;
+    background: rgba(20,30,20,0.94);
+    border: 1px solid rgba(216,194,122,0.4);
     border-radius: 16px;
-    padding: 24px 20px 26px;
+    padding: 28px;
     margin: 0 auto;
     max-width: 520px;
     text-align: left;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   }
 
   h1 {
-    color: #2f2b1b;
-    font-size: 22px;
-    margin-bottom: 8px;
+    color: #FBEAB9;
+    font-size: 24px;
+    margin-bottom: 10px;
     text-align: center;
   }
 
   .subtitle {
     text-align: center;
     font-size: 14px;
-    color: #8d7b3d;
-    margin-bottom: 20px;
+    color: #D8C27A;
+    margin-bottom: 24px;
   }
 
   .line {
-    border-bottom: 1px dashed rgba(0,0,0,0.15);
-    margin: 18px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.18);
+    margin: 24px 0;
   }
 
   .data-row {
@@ -251,96 +217,40 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
   }
 
   .label {
-    color: #2f2b1b;
+    color: #FBEAB9;
     font-weight: 600;
   }
 
   .footer {
-    margin-top: 20px;
+    margin-top: 24px;
     font-size: 13px;
-    color: #6b5d33;
+    color: #D8C27A;
     text-align: center;
     line-height: 1.6;
   }
 
   .highlight {
-    color: #2f2b1b;
+    color: #FBEAB9;
     font-weight: 600;
   }
 
   .gold-box {
-    margin: 18px 0;
-    background: #fdf8eb;
-    border-left: 4px solid #d8c27a;
-    padding: 12px 14px;
-    border-radius: 10px;
+    margin: 20px 0;
+    background: rgba(216,194,122,0.12);
+    border-left: 4px solid #D8C27A;
+    padding: 12px 16px;
+    border-radius: 8px;
     font-size: 14px;
   }
 
   .tree-icon {
-    font-size: 34px;
+    font-size: 36px;
     text-align: center;
   }
 
   p {
     font-size: 14px;
     line-height: 1.6;
-    margin: 8px 0;
-    color: #222222;
-  }
-
-  .id-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 6px;
-  }
-
-  .id-copy-box {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-
-  .id-input {
-    flex: 1;
-    padding: 6px 8px;
-    font-size: 14px;
-    border-radius: 6px;
-    border: 1px solid #d8c27a;
-    background: #fff8e6;
-    color: #222222;
-  }
-
-  .id-input:focus {
-    outline: none;
-    border-color: #b89f4a;
-  }
-
-  .copy-hint {
-    font-size: 12px;
-    color: #6b5d33;
-  }
-
-  .id-label {
-    font-size: 14px;
-  }
-
-  @media (max-width: 600px) {
-    .card {
-      margin: 0 10px;
-      padding: 20px 16px 22px;
-    }
-    h1 {
-      font-size: 20px;
-    }
-    p, .data-row {
-      font-size: 15px;
-    }
-    .id-input {
-      font-size: 15px;
-    }
   }
 </style>
 </head>
@@ -363,21 +273,13 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     <div class="line"></div>
 
     <div class="gold-box">
-      <div class="id-row">
-        <span class="id-label"><span class="label">Kunden-ID:</span></span>
-        <div class="id-copy-box">
-          <input class="id-input" type="text" value="${customerId}" readonly>
-        </div>
-        <span class="copy-hint">Zum Kopieren bitte antippen und halten, dann „Kopieren“ wählen.</span>
-      </div>
+      <div class="data-row"><span class="label">Kunden-ID:</span> ${customerId}</div>
       <div class="data-row"><span class="label">Baumgröße:</span> ${sizeShort}</div>
       <div class="data-row"><span class="label">Adresse:</span> ${street}, ${zip} ${city}</div>
       <div class="data-row"><span class="label">Lieferdatum:</span> ${dateDisplay}</div>
-      ${specialBlock}
     </div>
 
-    <p>${myOrderBlock}</p>
-    ${cancelRuleBlock}
+    ${myOrderBlock}
     ${paymentBlock}
     ${cancelNote}
 
@@ -395,7 +297,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
 </html>`;
 }
 
-function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true, includeCancelRule = true, noteAfterCancel = "" }) {
+function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true, noteAfterCancel = "" }) {
   const {
     name,
     customerId,
@@ -403,8 +305,7 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     street,
     zip,
     city,
-    date,
-    specialRequests
+    date
   } = order;
 
   const greetingName = name && name.trim() ? name.trim() : "Kundin, Kunde";
@@ -419,9 +320,7 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
 
   const myOrder = "Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf unserer Website treedelivery.de unter „Meine Bestellung“ bearbeiten oder stornieren.";
   const payment = includePaymentInfo ? "Die Bezahlung erfolgt Bar bei Lieferung." : "";
-  const cancelRule = includeCancelRule ? "Sie können Ihre Bestellung bis spätestens 24 Stunden vor dem Liefertermin stornieren." : "";
   const cancel = noteAfterCancel || "";
-  const special = specialRequests ? `Spezielle Wünsche: ${specialRequests}` : "";
 
   return [
     title,
@@ -438,10 +337,8 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     `- Baumgröße: ${sizeShort}`,
     `- Adresse: ${street}, ${zip} ${city}`,
     `- Lieferdatum: ${dateDisplay}`,
-    special,
     "",
     myOrder,
-    cancelRule,
     payment,
     cancel,
     "",
@@ -465,7 +362,7 @@ app.post("/order", async (req, res) => {
     const data = req.body;
     console.log("Neue Bestellung:", data);
 
-    const { name, size, street, zip, city, email, date, specialRequests } = data;
+    const { name, size, street, zip, city, email, date } = data;
 
     // Pflichtfelder prüfen
     if (!name || !size || !street || !zip || !city || !email) {
@@ -491,14 +388,9 @@ app.post("/order", async (req, res) => {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
-    // Datum prüfen – nicht früher als morgen, nicht nach 24.12.2025
-    if (date) {
-      if (!isDateAtLeastTomorrow(date)) {
-        return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
-      }
-      if (!isDateNotAfterMax(date)) {
-        return res.status(400).json({ error: "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen." });
-      }
+    // Datum prüfen (falls gesetzt) – nicht früher als morgen
+    if (date && !isDateAtLeastTomorrow(date)) {
+      return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
     }
 
     const customerId = generateId();
@@ -512,7 +404,6 @@ app.post("/order", async (req, res) => {
       city: expectedCity,
       email,
       date: date || null,
-      specialRequests: specialRequests || null,
       customerId,
       createdAt: new Date()
     };
@@ -525,10 +416,9 @@ app.post("/order", async (req, res) => {
 
       const emailConfig = {
         title: "Ihre TreeDelivery-Bestellung ist eingegangen 🎄",
-        intro: "vielen Dank für Ihre Bestellung. Nachfolgend finden Sie Ihre Bestelldaten:",
+        intro: "vielen Dank für Ihre Bestellung. Nachfolgend finden Sie Ihre Bestelldetails:",
         order,
-        includePaymentInfo: true,
-        includeCancelRule: true
+        includePaymentInfo: true
       };
 
       await sgMail.send({
@@ -587,7 +477,7 @@ app.post("/lookup", async (req, res) => {
 // ------- Bestellung aktualisieren -------
 app.post("/update", async (req, res) => {
   try {
-    const { email, customerId, size, street, zip, city, date, name, specialRequests } = req.body;
+    const { email, customerId, size, street, zip, city, date, name } = req.body;
 
     // Pflichtfelder prüfen
     if (!email || !customerId || !size || !street || !zip || !city) {
@@ -613,25 +503,19 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
     }
 
-    // Datum prüfen – nicht früher als morgen, nicht nach 24.12.2025
-    if (date) {
-      if (!isDateAtLeastTomorrow(date)) {
-        return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
-      }
-      if (!isDateNotAfterMax(date)) {
-        return res.status(400).json({ error: "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen." });
-      }
+    // Datum prüfen (falls gesetzt) – nicht früher als morgen
+    if (date && !isDateAtLeastTomorrow(date)) {
+      return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
     }
 
-    console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name, specialRequests });
+    console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name });
 
     const updateFields = {
       size,
       street,
       zip,
       city: expectedCity,
-      date: date || null,
-      specialRequests: specialRequests || null
+      date: date || null
     };
 
     if (typeof name === "string" && name.trim() !== "") {
@@ -648,6 +532,7 @@ app.post("/update", async (req, res) => {
 
     console.log("Update-Result:", updateResult);
 
+    // Nichts gefunden -> 404
     if (!updateResult.matchedCount || updateResult.matchedCount === 0) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
@@ -668,8 +553,7 @@ app.post("/update", async (req, res) => {
         title: "Ihre TreeDelivery-Bestellung wurde aktualisiert 🎄",
         intro: "wir haben Ihre Bestellung aktualisiert. Nachfolgend finden Sie die aktuellen Bestelldaten:",
         order: updatedOrder,
-        includePaymentInfo: true,
-        includeCancelRule: true
+        includePaymentInfo: true
       };
 
       await sgMail.send({
@@ -697,6 +581,7 @@ app.post("/update", async (req, res) => {
       });
     }
 
+    // 4) Erfolgsantwort
     res.json({ success: true, order: updatedOrder });
 
   } catch (err) {
@@ -720,17 +605,13 @@ app.post("/delete", async (req, res) => {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
+    // Bestellung zuerst holen für Mail
     const existing = await orders.findOne({ email, customerId });
     console.log("Existing order for delete:", existing);
 
     if (!existing) {
       console.log("Keine Bestellung gefunden für:", { email, customerId });
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
-    }
-
-    // Stornofrist prüfen: bis 24 Stunden vor Liefertermin
-    if (!isCancelableNow(existing)) {
-      return res.status(400).json({ error: "Eine Stornierung ist nur bis 24 Stunden vor dem Liefertermin möglich." });
     }
 
     const deleteResult = await orders.deleteOne({ email, customerId });
@@ -749,7 +630,7 @@ app.post("/delete", async (req, res) => {
         intro: "wir bestätigen Ihnen hiermit die Stornierung Ihrer Bestellung:",
         order: existing,
         includePaymentInfo: false,
-        includeCancelRule: false,
+        // zusätzlicher Hinweis: keine Lieferung / keine Zahlung
         noteAfterCancel: "Es erfolgt keine Lieferung und keine Zahlung mehr."
       };
 
@@ -784,6 +665,7 @@ app.post("/delete", async (req, res) => {
     res.status(500).json({ error: "Serverfehler bei der Stornierung." });
   }
 });
+
 
 // ------- Health-Check -------
 app.get("/", (req, res) => {
