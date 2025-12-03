@@ -400,9 +400,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
           <span class="id-label"><span class="label">Kunden-ID:</span></span>
           <div class="id-copy-box">
             <input class="id-input" id="customer-id-input" type="text" value="${customerId}" readonly>
-            <button class="copy-btn" onclick="(function(){ try { var el = document.getElementById('customer-id-input'); if (el && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(el.value); } } catch(e) {} })();">Kopieren</button>
           </div>
-          <div class="copy-hint">Tippen Sie auf „Kopieren“ oder markieren Sie die ID, um sie zu kopieren.</div>
         </div>
       </div>
     </div>
