@@ -757,8 +757,7 @@ function setupFormLogic() {
       return false;
     }
 
-    cityStatus.textContent = "✔ Ort passt zur PLZ.";
-    cityStatus.style.color = "var(--gold-light)";
+    cityStatus.textContent = "";
     city.style.borderColor = "var(--gold)";
     return true;
   }
@@ -1243,9 +1242,8 @@ function setupLookup() {
             updateBtn.disabled = true;
             return false;
           } else {
-            editCityStatus.textContent = "✔ Ort passt zur PLZ.";
-            editCityStatus.style.color = "var(--gold-light)";
-            editCity.style.borderColor = "var(--gold)";
+    cityStatus.textContent = "";
+    city.style.borderColor = "var(--gold)";
           }
         }
 
