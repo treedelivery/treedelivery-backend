@@ -442,7 +442,6 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     payment,
     cancel,
     "",
-    "Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner, falls Sie keine E-Mail im Posteingang finden.",
     "",
     "Mit freundlichen Grüßen",
     "Ihr TreeDelivery-Team"
