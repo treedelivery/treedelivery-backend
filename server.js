@@ -381,13 +381,10 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     ${paymentBlock}
     ${cancelNote}
 
-    <div class="footer">
-      Bitte prüfen Sie auch Ihren <span class="highlight">Spam- bzw. Werbungsordner</span>,<br>
-      falls Sie keine E-Mail im Posteingang finden.
-      <br><br>
-      Mit freundlichen Grüßen<br>
-      <span class="highlight">Ihr TreeDelivery-Team</span>
-    </div>
+<div class="footer">
+  Mit freundlichen Grüßen<br>
+  <span class="highlight">Ihr TreeDelivery-Team</span>
+</div>
 
   </div>
 </div>
