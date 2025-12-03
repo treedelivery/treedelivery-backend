@@ -547,9 +547,8 @@ app.post("/order", async (req, res) => {
       }
     }
 
-    // Prüfen, ob es bereits eine Bestellung mit dieser E-Mail-Adresse gibt
+    // Nur eine aktive Bestellung pro E-Mail-Adresse zulassen
     const existingOrder = await orders.findOne({ email });
-
     if (existingOrder) {
       return res.status(400).json({
         error:
@@ -678,18 +677,6 @@ app.post("/update", async (req, res) => {
         return res.status(400).json({ error: "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen." });
       }
     }
-
-    // Prüfen, ob es bereits eine Bestellung mit dieser E-Mail-Adresse gibt
-    const existingOrder = await orders.findOne({ email });
-
-    if (existingOrder) {
-      return res.status(400).json({
-        error:
-          "Für diese E-Mail-Adresse liegt bereits eine Bestellung vor. Bitte nutzen Sie den Bereich „Meine Bestellung“, um diese zu bearbeiten oder zu stornieren."
-      });
-    }
-
-    const customerId = generateId();
 
     console.log("Update-Request:", { email, customerId, size, street, zip, city, date, name, specialRequests });
 
