@@ -219,7 +219,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     background: #ffffff;
     border: 1px solid #e2e2e2;
     border-radius: 16px;
-    padding: 24px 20px 26px;
+    padding: 22px 18px 24px;
     margin: 0 auto;
     max-width: 520px;
     text-align: left;
@@ -237,16 +237,26 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     text-align: center;
     font-size: 14px;
     color: #8d7b3d;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+  }
+
+  h2 {
+    font-size: 15px;
+    margin: 16px 0 6px;
+    color: #2f2b1b;
+  }
+
+  .section {
+    margin-top: 10px;
   }
 
   .line {
-    border-bottom: 1px dashed rgba(0,0,0,0.15);
-    margin: 18px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    margin: 14px 0 10px;
   }
 
   .data-row {
-    margin: 6px 0;
+    margin: 4px 0;
     font-size: 14px;
   }
 
@@ -269,11 +279,10 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
   }
 
   .gold-box {
-    margin: 18px 0;
+    margin: 10px 0 14px;
     background: #fdf8eb;
-    border-left: 4px solid #d8c27a;
-    padding: 12px 14px;
     border-radius: 10px;
+    padding: 12px 14px;
     font-size: 14px;
   }
 
@@ -285,15 +294,16 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
   p {
     font-size: 14px;
     line-height: 1.6;
-    margin: 8px 0;
+    margin: 6px 0;
     color: #222222;
   }
 
   .id-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-top: 6px;
+    margin-bottom: 10px;
+  }
+
+  .id-label {
+    font-size: 14px;
   }
 
   .id-copy-box {
@@ -309,7 +319,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     font-size: 14px;
     border-radius: 6px;
     border: 1px solid #d8c27a;
-    background: #fff8e6;
+    background: #fffdf3;
     color: #222222;
   }
 
@@ -318,19 +328,33 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     border-color: #b89f4a;
   }
 
+  .copy-btn {
+    width: 90px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #d8c27a;
+    background: #f5e5b8;
+    color: #2f2b1b;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .copy-btn:active {
+    background: #e3d095;
+  }
+
   .copy-hint {
     font-size: 12px;
     color: #6b5d33;
-  }
-
-  .id-label {
-    font-size: 14px;
+    margin-top: 4px;
   }
 
   @media (max-width: 600px) {
     .card {
       margin: 0 10px;
-      padding: 20px 16px 22px;
+      padding: 20px 14px 22px;
     }
     h1 {
       font-size: 20px;
@@ -340,6 +364,11 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     }
     .id-input {
       font-size: 15px;
+    }
+    .copy-btn {
+      width: 96px;
+      height: 34px;
+      font-size: 14px;
     }
   }
 </style>
@@ -358,33 +387,50 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
 
     <p>${intro}</p>
 
-    ${deliveryBlock}
+    <div class="section">
+      ${deliveryBlock}
+    </div>
 
     <div class="line"></div>
 
-    <div class="gold-box">
-      <div class="id-row">
-        <span class="id-label"><span class="label">Kunden-ID:</span></span>
-        <div class="id-copy-box">
-          <input class="id-input" type="text" value="${customerId}" readonly>
+    <div class="section">
+      <h2>Ihre Kunden-ID</h2>
+      <div class="gold-box">
+        <div class="id-row">
+          <span class="id-label"><span class="label">Kunden-ID:</span></span>
+          <div class="id-copy-box">
+            <input class="id-input" id="customer-id-input" type="text" value="${customerId}" readonly>
+            <button class="copy-btn" onclick="(function(){ try { var el = document.getElementById('customer-id-input'); if (el && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(el.value); } } catch(e) {} })();">Kopieren</button>
+          </div>
+          <div class="copy-hint">Tippen Sie auf „Kopieren“ oder markieren Sie die ID, um sie zu kopieren.</div>
         </div>
-        <span class="copy-hint">Zum Kopieren bitte antippen und halten, dann „Kopieren“ wählen.</span>
       </div>
-      <div class="data-row"><span class="label">Baumgröße:</span> ${sizeShort}</div>
-      <div class="data-row"><span class="label">Adresse:</span> ${street}, ${zip} ${city}</div>
-      <div class="data-row"><span class="label">Lieferdatum:</span> ${dateDisplay}</div>
+    </div>
+
+    <div class="section">
+      <h2>Bestelldaten</h2>
+      <p class="data-row"><span class="label">Baumgröße:</span> ${sizeShort}</p>
+      <p class="data-row"><span class="label">Adresse:</span> ${street}, ${zip} ${city}</p>
+      <p class="data-row"><span class="label">Lieferdatum:</span> ${dateDisplay}</p>
       ${specialBlock}
     </div>
 
-    <p>${myOrderBlock}</p>
-    ${cancelRuleBlock}
-    ${paymentBlock}
-    ${cancelNote}
+    <div class="section">
+      <h2>Bearbeitung & Stornierung</h2>
+      <p>${myOrderBlock}</p>
+      ${cancelRuleBlock}
+    </div>
 
-<div class="footer">
-  Mit freundlichen Grüßen<br>
-  <span class="highlight">Ihr TreeDelivery-Team</span>
-</div>
+    <div class="section">
+      <h2>Zahlung</h2>
+      ${paymentBlock}
+      ${cancelNote}
+    </div>
+
+    <div class="footer">
+      Mit freundlichen Grüßen<br>
+      <span class="highlight">Ihr TreeDelivery-Team</span>
+    </div>
 
   </div>
 </div>
@@ -430,18 +476,22 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     dateLine,
     timeNote,
     "",
-    "Ihre Bestelldaten:",
-    `- Kunden-ID: ${customerId}`,
+    "Ihre Kunden-ID:",
+    customerId,
+    "",
+    "Bestelldaten:",
     `- Baumgröße: ${sizeShort}`,
     `- Adresse: ${street}, ${zip} ${city}`,
     `- Lieferdatum: ${dateDisplay}`,
     special,
     "",
+    "Bearbeitung & Stornierung:",
     myOrder,
     cancelRule,
-    payment,
     cancel,
     "",
+    "Zahlung:",
+    payment,
     "",
     "Mit freundlichen Grüßen",
     "Ihr TreeDelivery-Team"
