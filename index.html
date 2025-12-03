@@ -13,8 +13,14 @@
       --gold: #D8C27A;
       --gold-light: #FBEAB9;
       --soft: #EDE8D6;
+      --error: #ff6b6b;
+      --success: #7CFF93;
       --input-width: 90%;
       font-family: 'Inter', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
@@ -51,21 +57,34 @@
       box-shadow: 0 10px 40px rgba(255,220,150,0.15);
     }
 
+    header p {
+      margin-top: 0.6rem;
+      font-size: 0.95rem;
+    }
+
     .glow {
       filter: drop-shadow(0 0 10px var(--gold-light));
+    }
+
+    main {
+      padding: 0 1rem 2.5rem;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     .nav-tabs {
       display: flex;
       justify-content: center;
-      margin: 2rem auto;
+      margin: 2rem auto 1.4rem;
       max-width: 700px;
-      gap: 1rem;
+      gap: 0.8rem;
+      flex-wrap: wrap;
     }
 
     .nav-tabs button {
       flex: 1;
-      padding: 1rem;
+      min-width: 130px;
+      padding: 0.85rem 1rem;
       border-radius: 999px;
       border: 2px solid var(--gold);
       background: transparent;
@@ -73,7 +92,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: 0.25s;
-      font-size: 1.05rem;
+      font-size: 0.98rem;
     }
 
     .nav-tabs button.active {
@@ -83,44 +102,52 @@
     }
 
     .card {
-      background: rgba(15,26,15,0.85);
+      background: rgba(15,26,15,0.9);
       border: 1px solid rgba(216,194,122,0.25);
       backdrop-filter: blur(6px);
       border-radius: 1.4rem;
-      padding: 2rem 1.8rem;
-      margin: 2rem auto;
-      max-width: 500px;
+      padding: 1.8rem 1.5rem 2rem;
+      margin: 0 auto 1.6rem;
+      max-width: 520px;
       overflow: hidden;
     }
 
     h2 {
       color: var(--gold-light);
-      font-size: 1.8rem;
-      margin-bottom: 1.6rem;
+      font-size: 1.6rem;
+      margin-bottom: 1.2rem;
     }
 
     label {
       display: block;
       font-weight: 600;
       color: var(--gold-light);
-      margin-top: 1.1rem;
+      margin-top: 1rem;
+      font-size: 0.98rem;
     }
 
-    input, select {
+    input, select, textarea {
       width: var(--input-width);
-      padding: 0.85rem 1rem;
+      max-width: 100%;
+      padding: 0.8rem 0.9rem;
       border-radius: 0.7rem;
       border: 1px solid rgba(255,255,255,0.25);
       background: rgba(255,255,255,0.05);
       color: var(--soft);
-      font-size: 1.05rem;
+      font-size: 0.98rem;
       margin-top: .3rem;
       transition: 0.25s;
+      font-family: inherit;
     }
 
-    input:focus, select:focus {
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
       border-color: var(--gold);
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.08);
       box-shadow: 0 0 10px rgba(255,255,160,0.25);
       outline: none;
       transform: translateY(-1px);
@@ -131,11 +158,12 @@
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      font-size: 1.05rem;
+      font-size: 1rem;
       transition: 0.25s;
-      margin-top: 1rem;
+      margin-top: 1.2rem;
       font-weight: 600;
       font-family: 'Inter', sans-serif;
+      white-space: nowrap;
     }
 
     .btn-primary {
@@ -150,17 +178,34 @@
       transform: translateY(-2px);
     }
 
+    .btn-ghost-danger {
+      background: #552222;
+      color: #ffbbbb;
+      border: 1px solid rgba(255,187,187,0.5);
+    }
+
+    .btn-ghost-danger:hover:not(:disabled) {
+      background: #773131;
+      transform: translateY(-2px);
+    }
+
     .toggle-container {
-      margin-top: 1.5rem;
+      margin-top: 1.3rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.8rem;
+    }
+
+    .toggle-label-text {
+      font-size: 0.95rem;
     }
 
     .toggle {
       position: relative;
       width: 56px;
       height: 30px;
+      flex-shrink: 0;
     }
 
     .toggle input { opacity: 0; width: 0; height: 0; }
@@ -195,110 +240,206 @@
     }
 
     #date-wrapper,
-    #edit-date-wrapper {
+    #special-wrapper,
+    #edit-date-wrapper,
+    #edit-special-wrapper {
       display: none;
       opacity: 0;
-      transition: 0.3s ease;
+      transition: opacity 0.25s ease;
     }
 
     #date-wrapper.visible,
-    #edit-date-wrapper.visible {
+    #special-wrapper.visible,
+    #edit-date-wrapper.visible,
+    #edit-special-wrapper.visible {
       display: block;
       opacity: 1;
     }
 
     .status {
-      margin-top: 0.5rem;
-      font-size: 0.9rem;
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      min-height: 1.1rem;
     }
 
     #price-display {
       margin-top:1.2rem;
-      font-size:1.2rem;
+      font-size:1.1rem;
       color:var(--gold-light);
       font-weight:600;
     }
 
     #order-status {
-      margin-top: 0.8rem;
+      margin-top: 0.7rem;
       min-height: 1.2rem;
+      font-size: 0.9rem;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid var(--gold-light);
+      color: var(--gold-light);
+      font-size: 0.7rem;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .info-box {
+      margin-top: 0.25rem;
+      padding: 0.6rem 0.7rem;
+      border-radius: 0.7rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(216,194,122,0.35);
+      font-size: 0.8rem;
+      display: none;
+    }
+
+    .info-box.visible {
+      display: block;
+    }
+
+    /* Popup-Overlay */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal-backdrop.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: #151f15;
+      border-radius: 1.4rem;
+      border: 1px solid rgba(216,194,122,0.6);
+      max-width: 420px;
+      width: 90%;
+      padding: 1.8rem 1.4rem 1.6rem;
+      text-align: center;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.6);
+      animation: pop-in 0.35s ease-out;
+    }
+
+    .modal h3 {
+      margin-top: 0.4rem;
+      margin-bottom: 0.4rem;
+      font-size: 1.4rem;
+      color: var(--gold-light);
+    }
+
+    .modal p {
+      font-size: 0.95rem;
+      margin: 0.2rem 0;
+    }
+
+    .modal-highlight {
+      margin-top: 0.3rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.9rem;
+      background: rgba(215,194,122,0.09);
+      border: 1px solid rgba(216,194,122,0.5);
+      font-size: 0.9rem;
+    }
+
+    .modal-id {
+      font-family: "SF Mono", "Consolas", monospace;
+      font-size: 1.05rem;
+      letter-spacing: 0.03em;
+      color: var(--gold-light);
+    }
+
+    .modal-glow {
+      font-size: 2.1rem;
+      animation: sway 1.8s ease-in-out infinite;
+    }
+
+    .modal-footer-text {
+      font-size: 0.85rem;
+      margin-top: 0.6rem;
+      opacity: 0.9;
+    }
+
+    @keyframes pop-in {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes sway {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-6px);
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        padding: 1.6rem 1rem 1.3rem;
+      }
+
+      header p {
+        font-size: 0.9rem;
+      }
+
+      .card {
+        padding: 1.6rem 1.2rem 1.8rem;
+        border-radius: 1.2rem;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      input, select, textarea {
+        width: 100%;
+        font-size: 0.95rem;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .nav-tabs {
+        gap: 0.5rem;
+      }
+
+      .nav-tabs button {
+        font-size: 0.95rem;
+        padding: 0.8rem 0.9rem;
+      }
+
+      .toggle-container {
+        align-items: flex-start;
+      }
     }
 
     pre {
       white-space: pre-wrap;
       word-break: break-word;
-    }
-
-    /* Modal für Bestellbestätigung */
-    #order-modal.modal-hidden {
-      display: none;
-    }
-
-    #order-modal {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.75);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .modal {
-      background: rgba(15,26,15,0.97);
-      border-radius: 1.5rem;
-      padding: 2rem 2.2rem;
-      max-width: 420px;
-      width: 90%;
-      text-align: center;
-      border: 1px solid rgba(216,194,122,0.6);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
-    }
-
-    .modal-title {
-      font-size: 1.6rem;
-      color: var(--gold-light);
-      margin-bottom: 0.7rem;
-    }
-
-    .modal-subtitle {
-      font-size: 0.95rem;
-      color: var(--soft);
-      margin-bottom: 1.2rem;
-    }
-
-    .modal-highlight {
-      font-weight: 700;
-      color: var(--gold-light);
-    }
-
-    .modal-icon {
-      font-size: 3rem;
-      display: inline-block;
-      margin-bottom: 0.8rem;
-      animation: pop-in 0.8s ease-out forwards;
-      transform-origin: center;
-    }
-
-    .modal-note {
-      font-size: 0.9rem;
-      margin-top: 1rem;
-      color: var(--gold-light);
-    }
-
-    .btn-modal {
-      margin-top: 1.5rem;
-    }
-
-    @keyframes pop-in {
-      0% { transform: scale(0.3); opacity: 0; }
-      60% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
@@ -308,7 +449,7 @@
 <canvas id="snow-canvas"></canvas>
 
 <header>
-  <img src="logo.png" class="glow" style="max-width:260px;width:55%;">
+  <img src="logo.png" class="glow" style="max-width:260px;width:55%;" alt="TreeDelivery Logo">
   <p>Weihnachtsbäume bequem nach Hause geliefert</p>
 </header>
 
@@ -325,37 +466,37 @@
     <h2>🎄 Baum bestellen</h2>
 
     <form id="order-form">
-      <label>Baumgröße *</label>
+      <label for="name">Name *</label>
+      <input id="name" autocomplete="name" disabled>
+
+      <label for="size">Baumgröße *</label>
       <select id="size">
         <option value="">Bitte wählen…</option>
-        <option value="small" data-price="60">Klein – ca. 1,5 m – 60€</option>
-        <option value="medium" data-price="90">Mittel – ca. 1,8 m – 90€</option>
-        <option value="large" data-price="100">Groß – ca. 2,1 m – 100€</option>
+        <option value="small" data-price="60">S – ca. 1,5 m – 60€</option>
+        <option value="medium" data-price="90">M – ca. 1,8 m – 90€</option>
+        <option value="large" data-price="100">L – ca. 2,1 m – 100€</option>
       </select>
 
-      <label>Name *</label>
-      <input id="name" disabled>
+      <label for="street">Straße &amp; Hausnummer *</label>
+      <input id="street" autocomplete="street-address" disabled>
 
-      <label>Straße & Hausnummer *</label>
-      <input id="street" disabled>
-
-      <label>PLZ *</label>
-      <input id="zip" disabled>
+      <label for="zip">PLZ *</label>
+      <input id="zip" inputmode="numeric" pattern="[0-9]*" maxlength="5" disabled>
       <p id="zip-status" class="status"></p>
 
-      <label>Ort *</label>
+      <label for="city">Ort *</label>
       <input id="city" disabled>
       <p id="city-status" class="status"></p>
 
-      <label>E-Mail *</label>
-      <input id="email" type="email" disabled>
+      <label for="email">E-Mail *</label>
+      <input id="email" type="email" autocomplete="email" disabled>
 
-      <label>E-Mail bestätigen *</label>
-      <input id="email-confirm" type="email" disabled>
+      <label for="email-confirm">E-Mail bestätigen *</label>
+      <input id="email-confirm" type="email" autocomplete="email" disabled>
       <p id="email-status" class="status"></p>
 
       <div class="toggle-container">
-        <span>Wunschtermin?</span>
+        <span class="toggle-label-text">Wunschtermin?</span>
         <label class="toggle">
           <input type="checkbox" id="date-toggle" disabled>
           <span class="slider"></span>
@@ -363,11 +504,24 @@
       </div>
 
       <div id="date-wrapper">
-        <label>Lieferdatum</label>
+        <label for="date">Lieferdatum</label>
         <input id="date" type="date" disabled>
         <p class="status" style="font-size:0.85rem;">
           Die genauen Lieferzeiten stehen in Ihrer Bestätigungsmail.
         </p>
+      </div>
+
+      <div class="toggle-container">
+        <span class="toggle-label-text">Spezielle Wünsche?</span>
+        <label class="toggle">
+          <input type="checkbox" id="special-toggle" disabled>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div id="special-wrapper">
+        <label for="special-requests">Spezielle Wünsche</label>
+        <textarea id="special-requests" placeholder="Zum Beispiel: Baum bereits angespitzt, bestimmte Uhrzeit-Spanne, Hinweise zur Haustür …" disabled></textarea>
       </div>
 
       <p id="price-display">Preis: —</p>
@@ -387,11 +541,20 @@
     <h2>📦 Meine Bestellung</h2>
 
     <form id="lookup-form">
-      <label>E-Mail *</label>
-      <input id="lookup-email" type="email">
+      <label for="lookup-email">E-Mail *</label>
+      <input id="lookup-email" type="email" autocomplete="email">
 
-      <label>Kunden-ID *</label>
+      <label for="lookup-id">
+        <span class="info-row">
+          <span>Kunden-ID *</span>
+          <span class="info-icon" id="id-info-icon">i</span>
+        </span>
+      </label>
       <input id="lookup-id">
+      <div id="id-info-box" class="info-box">
+        Ihre Kunden-ID finden Sie in der Bestätigungs-E-Mail, die Sie nach der Bestellung erhalten haben.
+        Prüfen Sie bitte auch den Spam- bzw. Werbungsordner, falls Sie die E-Mail nicht im Posteingang sehen.
+      </div>
 
       <button class="btn btn-primary" type="submit">Bestellung suchen</button>
       <p id="lookup-status" class="status"></p>
@@ -403,32 +566,41 @@
   <!-- SUPPORT -->
   <section id="tab-support" class="card" style="display:none;">
     <h2>💬 Support</h2>
-    <p>Bei Fragen schreiben Sie uns gerne eine E-Mail: <br><br>
+    <p>Bei Fragen schreiben Sie uns gerne:<br><br>
       <strong>kontakt@treedelivery.de</strong>
     </p>
   </section>
 
 </main>
 
-<!-- MODAL FÜR BESTELLBESTÄTIGUNG -->
-<div id="order-modal" class="modal-hidden">
-  <div class="modal-backdrop">
-    <div class="modal">
-      <div class="modal-icon">🎄</div>
-      <div class="modal-title">Vielen Dank für Ihre Bestellung!</div>
-      <div class="modal-subtitle">
-        Ihre Kunden-ID lautet:<br>
-        <span id="modal-customer-id" class="modal-highlight"></span><br><br>
-        Die Bestätigung wurde an<br>
-        <span id="modal-email" class="modal-highlight"></span><br>
-        gesendet.
-      </div>
-      <p class="modal-note">
-        Bitte prüfen Sie auch Ihren <strong>Spam- bzw. Werbungsordner</strong>,
-        falls Sie keine E-Mail im Posteingang finden.
+<!-- POPUP MODAL -->
+<div id="order-modal-backdrop" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-glow">🎄</div>
+    <h3>Ihre Bestellung ist eingegangen</h3>
+    <p id="modal-text-main">
+      Vielen Dank für Ihre Bestellung bei TreeDelivery.
+    </p>
+
+    <div class="modal-highlight">
+      <p style="margin-bottom:0.3rem;"><strong>Ihre Kunden-ID:</strong></p>
+      <p id="modal-customer-id" class="modal-id"></p>
+      <p style="margin-top:0.6rem; font-size:0.85rem;">
+        Eine Bestätigungs-E-Mail wurde an<br>
+        <span id="modal-email" style="font-weight:600;"></span> gesendet.
       </p>
-      <button id="modal-close" class="btn btn-primary btn-modal">Fenster schließen</button>
     </div>
+
+    <p style="font-size:0.9rem;">
+      Bitte prüfen Sie auch den Spam- bzw. Werbungsordner, falls Sie keine E-Mail im Posteingang sehen.
+    </p>
+    <p class="modal-footer-text">
+      Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf treedelivery.de unter „Meine Bestellung“ bearbeiten oder stornieren.
+    </p>
+
+    <button id="modal-close-btn" class="btn btn-primary" type="button" style="margin-top:1rem;">
+      Verstanden
+    </button>
   </div>
 </div>
 
@@ -436,7 +608,16 @@
 <script>
 const BACKEND_URL = "https://treedelivery-backend.onrender.com";
 
-// PLZ → Ort Mapping
+// ------- ZIPS & ORTE -------
+const allowedZips = [
+  "57072","57074","57076","57078","57080",
+  "57223","57234","57250","57258","57271",
+  "57290","57299",
+  "57319","57334","57339",
+  "35708","35683","35684","35685",
+  "35745","57555","57399","57610"
+];
+
 const zipToCity = {
   "57072": "Siegen",
   "57074": "Siegen",
@@ -453,14 +634,14 @@ const zipToCity = {
   "57319": "Bad Berleburg",
   "57334": "Bad Laasphe",
   "57339": "Erndtebrück",
-  "57555": "Mudersbach",
-  "57399": "Kirchhundem",
-  "57610": "Altenkirchen",
   "35708": "Haiger",
   "35683": "Dillenburg",
   "35684": "Dillenburg",
   "35685": "Dillenburg",
-  "35745": "Herborn"
+  "35745": "Herborn",
+  "57555": "Mudersbach",
+  "57399": "Kirchhundem",
+  "57610": "Altenkirchen"
 };
 
 function getCityByZip(zip) {
@@ -471,7 +652,17 @@ function normalizeCity(str) {
   return (str || "").trim().toLowerCase();
 }
 
-// ------- Tabs & Initialisierung -------
+function getTomorrowDateStr() {
+  const today = new Date();
+  today.setDate(today.getDate() + 1);
+  const y = today.getFullYear();
+  const m = String(today.getMonth() + 1).padStart(2, "0");
+  const d = String(today.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+const MAX_DELIVERY_DATE = "2025-12-24";
+
 document.addEventListener("DOMContentLoaded", () => {
   const buttons = document.querySelectorAll('.nav-tabs button');
   const tabs = {
@@ -491,39 +682,28 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Modal schließen
-  const modalClose = document.getElementById("modal-close");
-  if (modalClose) {
-    modalClose.addEventListener("click", () => {
-      document.getElementById("order-modal").classList.add("modal-hidden");
-    });
-  }
-
+  setupInfoIcon();
   setupFormLogic();
   setupOrderSubmit();
   setupLookup();
+  setupModal();
+  setupSnow();
 });
 
-// ------- ZIP Bereich -------
-const allowedZips = [
-  "57072","57074","57076","57078","57080",
-  "57223","57234","57250","57258","57271",
-  "57290","57299",
-  "57319","57334","57339",
-  "35708","35683","35684","35685",
-  "35745","57555","57399","57610"
-];
+function setupInfoIcon() {
+  const infoIcon = document.getElementById("id-info-icon");
+  const infoBox = document.getElementById("id-info-box");
+  if (!infoIcon || !infoBox) return;
 
-function openOrderModal(customerId, email) {
-  const modal = document.getElementById("order-modal");
-  document.getElementById("modal-customer-id").textContent = customerId;
-  document.getElementById("modal-email").textContent = email;
-  modal.classList.remove("modal-hidden");
+  infoIcon.addEventListener("click", () => {
+    infoBox.classList.toggle("visible");
+  });
 }
 
+// ------- Formular-Logik Bestellung -------
 function setupFormLogic() {
-  const size = document.getElementById("size");
   const nameInput = document.getElementById("name");
+  const size = document.getElementById("size");
   const street = document.getElementById("street");
   const zip = document.getElementById("zip");
   const city = document.getElementById("city");
@@ -532,222 +712,166 @@ function setupFormLogic() {
   const dateToggle = document.getElementById("date-toggle");
   const dateInput = document.getElementById("date");
   const dateWrapper = document.getElementById("date-wrapper");
+  const specialToggle = document.getElementById("special-toggle");
+  const specialWrapper = document.getElementById("special-wrapper");
+  const specialTextarea = document.getElementById("special-requests");
   const orderBtn = document.getElementById("order-btn");
   const priceDisplay = document.getElementById("price-display");
   const zipStatus = document.getElementById("zip-status");
   const cityStatus = document.getElementById("city-status");
   const emailStatus = document.getElementById("email-status");
 
-  let currentExpectedCity = null;
+  const minDate = getTomorrowDateStr();
+  dateInput.setAttribute("min", minDate);
+  dateInput.setAttribute("max", MAX_DELIVERY_DATE);
 
-  // Start: alles deaktiviert außer Größe
-  nameInput.disabled = true;
-  street.disabled = true;
-  zip.disabled = true;
-  city.disabled = true;
-  email.disabled = true;
-  emailConfirm.disabled = true;
-  dateToggle.disabled = true;
-  dateInput.disabled = true;
-  orderBtn.disabled = true;
-
-  function resetAfterName() {
-    street.value = "";
-    street.disabled = true;
-
-    zip.value = "";
-    zip.disabled = true;
-    zipStatus.textContent = "";
-    zipStatus.style.color = "var(--gold-light)";
-
-    city.value = "";
-    city.disabled = true;
-    cityStatus.textContent = "";
-    cityStatus.style.color = "var(--gold-light)";
-    city.style.borderColor = "";
-
-    email.value = "";
-    email.disabled = true;
-
-    emailConfirm.value = "";
-    emailConfirm.disabled = true;
-    emailStatus.textContent = "";
-
-    dateToggle.checked = false;
-    dateToggle.disabled = true;
-
-    dateInput.value = "";
-    dateInput.disabled = true;
-    dateWrapper.classList.remove("visible");
-
-    orderBtn.disabled = true;
-  }
-
-  function resetCityValidation() {
-    cityStatus.textContent = "";
-    cityStatus.style.color = "var(--gold-light)";
-    city.style.borderColor = "";
-  }
-
-  function validateCity() {
-    resetCityValidation();
-
-    if (!currentExpectedCity) {
-      return true;
-    }
-
-    const typed = normalizeCity(city.value);
-    const expected = normalizeCity(currentExpectedCity);
-
-    if (!typed) {
-      cityStatus.textContent = "Bitte geben Sie den Ort ein.";
-      cityStatus.style.color = "#ff6b6b";
-      city.style.borderColor = "rgba(255,0,0,0.5)";
-      return false;
-    }
-
-    if (typed !== expected) {
-      cityStatus.textContent = `Der Ort passt nicht zur eingegebenen PLZ (erwartet: „${currentExpectedCity}“).`;
-      cityStatus.style.color = "#ff6b6b";
-      city.style.borderColor = "rgba(255,0,0,0.5)";
-      return false;
-    }
-
-    cityStatus.textContent = "✔ Ort passt zur PLZ.";
-    cityStatus.style.color = "var(--gold-light)";
-    city.style.borderColor = "var(--gold)";
-    return true;
-  }
-
-  // STEP 1: Größe wählen
-  size.onchange = () => {
+  size.addEventListener("change", () => {
     const selected = size.options[size.selectedIndex];
     const price = selected && selected.dataset.price ? selected.dataset.price : "—";
     priceDisplay.textContent = "Preis: " + price + "€";
 
-    if (size.value) {
-      nameInput.disabled = false;
-    } else {
+    nameInput.disabled = !size.value;
+    if (!size.value) {
       nameInput.value = "";
-      nameInput.disabled = true;
-      resetAfterName();
-    }
-  };
-
-  // STEP 2: Name
-  nameInput.oninput = () => {
-    const hasName = nameInput.value.trim() !== "";
-    street.disabled = !hasName;
-
-    if (!hasName) {
-      resetAfterName();
-    }
-  };
-
-  // STEP 3: Straße
-  street.oninput = () => {
-    zip.disabled = street.value.trim() === "";
-    if (zip.disabled) {
+      street.value = "";
       zip.value = "";
-      zipStatus.textContent = "";
-      currentExpectedCity = null;
-
       city.value = "";
-      city.disabled = true;
-      resetCityValidation();
-
       email.value = "";
-      email.disabled = true;
-
       emailConfirm.value = "";
+      street.disabled = true;
+      zip.disabled = true;
+      city.disabled = true;
+      email.disabled = true;
       emailConfirm.disabled = true;
-      emailStatus.textContent = "";
-
       dateToggle.checked = false;
       dateToggle.disabled = true;
-      dateInput.value = "";
-      dateInput.disabled = true;
       dateWrapper.classList.remove("visible");
+      dateInput.disabled = true;
+      dateInput.value = "";
+      specialToggle.checked = false;
+      specialToggle.disabled = true;
+      specialWrapper.classList.remove("visible");
+      specialTextarea.disabled = true;
+      specialTextarea.value = "";
       orderBtn.disabled = true;
+      zipStatus.textContent = "";
+      cityStatus.textContent = "";
+      emailStatus.textContent = "";
     }
-  };
+  });
 
-  // STEP 4: PLZ
-  zip.oninput = () => {
+  nameInput.addEventListener("input", () => {
+    const val = nameInput.value.trim();
+    street.disabled = val.length < 2;
+  });
+
+  street.addEventListener("input", () => {
+    zip.disabled = street.value.trim() === "";
+  });
+
+  function validateZipAndCity() {
     const val = zip.value.trim();
-
     zipStatus.textContent = "";
     zipStatus.style.color = "var(--gold-light)";
+    cityStatus.textContent = "";
+    cityStatus.style.color = "var(--gold-light)";
 
-    currentExpectedCity = null;
-    city.value = "";
     city.disabled = true;
-    resetCityValidation();
     email.disabled = true;
-    email.value = "";
-    emailConfirm.value = "";
     emailConfirm.disabled = true;
+    emailConfirm.value = "";
     emailStatus.textContent = "";
     dateToggle.disabled = true;
     dateToggle.checked = false;
+    dateWrapper.classList.remove("visible");
     dateInput.disabled = true;
     dateInput.value = "";
-    dateWrapper.classList.remove("visible");
+    specialToggle.disabled = true;
+    specialToggle.checked = false;
+    specialWrapper.classList.remove("visible");
+    specialTextarea.disabled = true;
+    specialTextarea.value = "";
     orderBtn.disabled = true;
 
     if (val.length < 5) {
+      city.value = "";
       return;
     }
 
     if (!allowedZips.includes(val)) {
-      zipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
-      zipStatus.style.color = "#ff6b6b";
-      return;
-    }
-
-    zipStatus.textContent = "✔ Innerhalb unseres Liefergebiets.";
-    zipStatus.style.color = "var(--gold-light)";
-
-    const mappedCity = getCityByZip(val);
-    currentExpectedCity = mappedCity;
-    city.disabled = false;
-
-    if (mappedCity) {
-      city.value = mappedCity;
-      validateCity();
-      email.disabled = false;
-    } else {
       city.value = "";
-    }
-  };
-
-  // STEP 5: Ort
-  city.oninput = () => {
-    const ok = validateCity();
-    if (!ok) {
-      email.disabled = true;
-      email.value = "";
-      emailConfirm.value = "";
-      emailConfirm.disabled = true;
-      emailStatus.textContent = "";
-      dateToggle.disabled = true;
-      dateToggle.checked = false;
-      dateInput.disabled = true;
-      dateInput.value = "";
-      dateWrapper.classList.remove("visible");
-      orderBtn.disabled = true;
+      zipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
+      zipStatus.style.color = "var(--error)";
       return;
     }
 
+    const expectedCity = getCityByZip(val);
+    if (!expectedCity) {
+      city.value = "";
+      zipStatus.textContent = "❌ Zu dieser PLZ ist kein Ort hinterlegt.";
+      zipStatus.style.color = "var(--error)";
+      return;
+    }
+
+    city.disabled = false;
+    city.value = expectedCity;
+    cityStatus.textContent = "";
     email.disabled = false;
-  };
+  }
+
+  zip.addEventListener("input", validateZipAndCity);
+
+  function revalidateCity() {
+    const val = zip.value.trim();
+    const currentCity = city.value.trim();
+    const expected = getCityByZip(val);
+
+    cityStatus.textContent = "";
+    cityStatus.style.color = "var(--gold-light)";
+
+    if (!val || !expected) {
+      cityStatus.textContent = "";
+      email.disabled = true;
+      emailConfirm.disabled = true;
+      orderBtn.disabled = true;
+      dateToggle.disabled = true;
+      specialToggle.disabled = true;
+      return;
+    }
+
+    if (!currentCity) {
+      cityStatus.textContent = "❌ Bitte geben Sie einen Ort ein.";
+      cityStatus.style.color = "var(--error)";
+      email.disabled = true;
+      emailConfirm.disabled = true;
+      orderBtn.disabled = true;
+      dateToggle.disabled = true;
+      specialToggle.disabled = true;
+      return;
+    }
+
+    if (normalizeCity(expected) !== normalizeCity(currentCity)) {
+      cityStatus.textContent = "❌ Ort passt nicht zur angegebenen PLZ.";
+      cityStatus.style.color = "var(--error)";
+      email.disabled = true;
+      emailConfirm.disabled = true;
+      orderBtn.disabled = true;
+      dateToggle.disabled = true;
+      specialToggle.disabled = true;
+      return;
+    }
+
+    cityStatus.textContent = "";
+    email.disabled = false;
+  }
+
+  city.addEventListener("input", revalidateCity);
 
   function isValidEmailFormat(mail) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
   }
 
-  // STEP 6: E-Mail Format
-  email.oninput = () => {
+  email.addEventListener("input", () => {
     const mail = email.value.trim();
 
     if (isValidEmailFormat(mail)) {
@@ -756,50 +880,83 @@ function setupFormLogic() {
     } else {
       email.style.borderColor = "rgba(255,0,0,0.5)";
       emailConfirm.disabled = true;
-      orderBtn.disabled = true;
-      dateToggle.disabled = true;
+      emailConfirm.value = "";
       emailStatus.textContent = "";
+      dateToggle.disabled = true;
+      dateToggle.checked = false;
+      dateWrapper.classList.remove("visible");
+      dateInput.disabled = true;
+      dateInput.value = "";
+      specialToggle.disabled = true;
+      specialToggle.checked = false;
+      specialWrapper.classList.remove("visible");
+      specialTextarea.disabled = true;
+      specialTextarea.value = "";
+      orderBtn.disabled = true;
     }
-  };
+  });
 
-  // STEP 7: E-Mails vergleichen
-  emailConfirm.oninput = () => {
-    const mail = email.value.trim();
-    const mailConfirm = emailConfirm.value.trim();
-
-    if (mail && mail === mailConfirm) {
-      emailStatus.textContent = "✔ E-Mail-Adresse bestätigt.";
-      emailStatus.style.color = "var(--gold-light)";
+  emailConfirm.addEventListener("input", () => {
+    if (email.value === emailConfirm.value && email.value.trim() !== "") {
+      emailStatus.textContent = "✔ E-Mail bestätigt";
+      emailStatus.style.color = "var(--success)";
       dateToggle.disabled = false;
+      specialToggle.disabled = false;
       orderBtn.disabled = false;
     } else {
-      emailStatus.textContent = "❌ Die E-Mail-Adressen stimmen nicht überein.";
-      emailStatus.style.color = "#ff6b6b";
+      emailStatus.textContent = "❌ E-Mail-Adressen stimmen nicht überein.";
+      emailStatus.style.color = "var(--error)";
       dateToggle.disabled = true;
+      dateToggle.checked = false;
+      dateWrapper.classList.remove("visible");
+      dateInput.disabled = true;
+      dateInput.value = "";
+      specialToggle.disabled = true;
+      specialToggle.checked = false;
+      specialWrapper.classList.remove("visible");
+      specialTextarea.disabled = true;
+      specialTextarea.value = "";
       orderBtn.disabled = true;
     }
-  };
+  });
 
-  // Wunschtermin Toggle
-  dateToggle.onchange = () => {
+  dateToggle.addEventListener("change", () => {
     const visible = dateToggle.checked;
     dateWrapper.classList.toggle("visible", visible);
     dateInput.disabled = !visible;
-  };
+    if (!visible) {
+      dateInput.value = "";
+    } else {
+      const todayMin = getTomorrowDateStr();
+      dateInput.setAttribute("min", todayMin);
+      dateInput.setAttribute("max", MAX_DELIVERY_DATE);
+    }
+  });
+
+  specialToggle.addEventListener("change", () => {
+    const visible = specialToggle.checked;
+    specialWrapper.classList.toggle("visible", visible);
+    specialTextarea.disabled = !visible;
+    if (!visible) {
+      specialTextarea.value = "";
+    }
+  });
 }
 
-// ------- Bestellung abschicken -------
+// ------- Bestellung abschicken + Popup -------
 function setupOrderSubmit() {
   const form = document.getElementById("order-form");
   const statusEl = document.getElementById("order-status");
+  const orderBtn = document.getElementById("order-btn");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     statusEl.style.color = "var(--gold-light)";
     statusEl.textContent = "Bestellung wird gesendet…";
+    orderBtn.disabled = true;
 
-    const size = document.getElementById("size").value;
     const name = document.getElementById("name").value.trim();
+    const size = document.getElementById("size").value;
     const street = document.getElementById("street").value.trim();
     const zip = document.getElementById("zip").value.trim();
     const city = document.getElementById("city").value.trim();
@@ -807,24 +964,37 @@ function setupOrderSubmit() {
     const emailConfirm = document.getElementById("email-confirm").value.trim();
     const dateToggle = document.getElementById("date-toggle").checked;
     const date = document.getElementById("date").value || null;
+    const specialToggle = document.getElementById("special-toggle").checked;
+    const specialRequests = specialToggle ? document.getElementById("special-requests").value.trim() : null;
 
-    if (!size || !name || !street || !zip || !city || !email || !emailConfirm) {
-      statusEl.style.color = "#ff6b6b";
+    if (!name || !size || !street || !zip || !city || !email || !emailConfirm) {
+      statusEl.style.color = "var(--error)";
       statusEl.textContent = "Bitte füllen Sie alle Pflichtfelder aus.";
+      orderBtn.disabled = false;
       return;
     }
 
     if (email !== emailConfirm) {
-      statusEl.style.color = "#ff6b6b";
-      statusEl.textContent = "Die E-Mail-Adressen stimmen nicht überein.";
+      statusEl.style.color = "var(--error)";
+      statusEl.textContent = "E-Mail-Adressen stimmen nicht überein.";
+      orderBtn.disabled = false;
       return;
     }
 
-    const expectedCity = getCityByZip(zip);
-    if (!expectedCity || normalizeCity(expectedCity) !== normalizeCity(city)) {
-      statusEl.style.color = "#ff6b6b";
-      statusEl.textContent = "Der Ort passt nicht zur eingegebenen PLZ.";
-      return;
+    if (dateToggle && date) {
+      const min = getTomorrowDateStr();
+      if (date < min) {
+        statusEl.style.color = "var(--error)";
+        statusEl.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
+        orderBtn.disabled = false;
+        return;
+      }
+      if (date > MAX_DELIVERY_DATE) {
+        statusEl.style.color = "var(--error)";
+        statusEl.textContent = "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen.";
+        orderBtn.disabled = false;
+        return;
+      }
     }
 
     try {
@@ -832,35 +1002,66 @@ function setupOrderSubmit() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          size,
           name,
+          size,
           street,
           zip,
-          city: expectedCity,
+          city,
           email,
-          date: dateToggle ? date : null
+          date: dateToggle ? date : null,
+          specialRequests: specialRequests || null
         })
       });
 
       const data = await resp.json();
 
       if (!resp.ok) {
-        statusEl.style.color = "#ff6b6b";
+        statusEl.style.color = "var(--error)";
         statusEl.textContent = data.error || "Fehler beim Speichern der Bestellung.";
+        orderBtn.disabled = false;
         return;
       }
 
-      // Erfolg
-      statusEl.style.color = "#7CFF93";
-      statusEl.textContent = "Bestellung gespeichert.";
+      statusEl.style.color = "var(--success)";
+      statusEl.textContent = "Bestellung gespeichert. Eine Bestätigung wurde per E-Mail versendet.";
+
       openOrderModal(data.customerId, email);
 
     } catch (err) {
       console.error(err);
-      statusEl.style.color = "#ff6b6b";
+      statusEl.style.color = "var(--error)";
       statusEl.textContent = "Der Server ist momentan nicht erreichbar. Bitte versuchen Sie es später erneut.";
+      orderBtn.disabled = false;
     }
   });
+}
+
+// ------- Modal / Popup -------
+function setupModal() {
+  const backdrop = document.getElementById("order-modal-backdrop");
+  const closeBtn = document.getElementById("modal-close-btn");
+
+  function close() {
+    backdrop.classList.remove("visible");
+  }
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) {
+      close();
+    }
+  });
+}
+
+function openOrderModal(customerId, email) {
+  const backdrop = document.getElementById("order-modal-backdrop");
+  const idEl = document.getElementById("modal-customer-id");
+  const mailEl = document.getElementById("modal-email");
+
+  idEl.textContent = customerId || "—";
+  mailEl.textContent = email || "Ihre E-Mail-Adresse";
+
+  backdrop.classList.add("visible");
 }
 
 // ------- Bestellung abrufen + bearbeiten/stornieren -------
@@ -883,7 +1084,7 @@ function setupLookup() {
     const customerId = document.getElementById("lookup-id").value.trim();
 
     if (!email || !customerId) {
-      statusEl.style.color = "#ff6b6b";
+      statusEl.style.color = "var(--error)";
       statusEl.textContent = "Bitte geben Sie E-Mail-Adresse und Kunden-ID ein.";
       return;
     }
@@ -898,12 +1099,12 @@ function setupLookup() {
       const data = await resp.json();
 
       if (!resp.ok) {
-        statusEl.style.color = "#ff6b6b";
+        statusEl.style.color = "var(--error)";
         statusEl.textContent = data.error || "Keine Bestellung gefunden.";
         return;
       }
 
-      statusEl.style.color = "#7CFF93";
+      statusEl.style.color = "var(--success)";
       statusEl.textContent = "Bestellung gefunden.";
 
       currentEmail = data.email || email;
@@ -913,39 +1114,43 @@ function setupLookup() {
       const size = data.size || "";
       const street = data.street || "";
       const zip = data.zip || "";
-      const storedCity = data.city || "";
-      const mappedCity = getCityByZip(zip) || storedCity;
+      const city = data.city || "";
       const date = data.date || "";
+      const specialRequests = data.specialRequests || "";
 
-      // Editierbare Karte rendern
+      const minDate = getTomorrowDateStr();
+      const safeDate = date ? new Date(date).toISOString().slice(0,10) : "";
+
       resultEl.innerHTML = `
         <div style="border-top:1px solid rgba(216,194,122,0.4); padding-top:1rem; margin-top:1rem;">
-          <p style="font-size:0.9rem; color:var(--gold-light);">
+          <p style="font-size:0.9rem; color:var(--gold-light); margin-bottom:0.8rem;">
             Kunden-ID: <strong>${currentCustomerId}</strong><br>
-            Name: <strong>${name || "–"}</strong><br>
             E-Mail: <strong>${currentEmail}</strong>
           </p>
 
-          <label>Baumgröße</label>
-          <select id="edit-size" style="margin-bottom:0.5rem;">
-            <option value="small" ${size === "small" ? "selected" : ""}>Klein – ca. 1,5 m – 60€</option>
-            <option value="medium" ${size === "medium" ? "selected" : ""}>Mittel – ca. 1,8 m – 90€</option>
-            <option value="large" ${size === "large" ? "selected" : ""}>Groß – ca. 2,1 m – 100€</option>
+          <label for="edit-name">Name</label>
+          <input id="edit-name" value="${name.replace(/"/g, "&quot;")}" style="width:var(--input-width);">
+
+          <label for="edit-size">Baumgröße</label>
+          <select id="edit-size" style="width:var(--input-width); margin-bottom:0.1rem;">
+            <option value="small" ${size === "small" ? "selected" : ""}>S – ca. 1,5 m – 60€</option>
+            <option value="medium" ${size === "medium" ? "selected" : ""}>M – ca. 1,8 m – 90€</option>
+            <option value="large" ${size === "large" ? "selected" : ""}>L – ca. 2,1 m – 100€</option>
           </select>
 
-          <label>Straße & Hausnummer</label>
-          <input id="edit-street" value="${street}" style="margin-bottom:0.5rem;">
+          <label for="edit-street">Straße &amp; Hausnummer</label>
+          <input id="edit-street" value="${street.replace(/"/g, "&quot;")}" style="width:var(--input-width);">
 
-          <label>PLZ</label>
-          <input id="edit-zip" value="${zip}" style="margin-bottom:0.2rem;">
+          <label for="edit-zip">PLZ</label>
+          <input id="edit-zip" value="${zip}" maxlength="5" style="width:var(--input-width);">
           <p id="edit-zip-status" class="status"></p>
 
-          <label>Ort</label>
-          <input id="edit-city" value="${mappedCity}" style="margin-bottom:0.2rem;">
+          <label for="edit-city">Ort</label>
+          <input id="edit-city" value="${city.replace(/"/g, "&quot;")}" style="width:var(--input-width);">
           <p id="edit-city-status" class="status"></p>
 
-          <div class="toggle-container" style="margin-top:1.2rem;">
-            <span>Wunschtermin?</span>
+          <div class="toggle-container" style="margin-top:1.1rem;">
+            <span class="toggle-label-text">Wunschtermin?</span>
             <label class="toggle">
               <input type="checkbox" id="edit-date-toggle">
               <span class="slider"></span>
@@ -953,140 +1158,179 @@ function setupLookup() {
           </div>
 
           <div id="edit-date-wrapper">
-            <label>Lieferdatum (optional)</label>
-            <input id="edit-date" type="date" value="${date ? new Date(date).toISOString().slice(0,10) : ""}" style="margin-bottom:0.5rem;">
-            <p class="status" style="font-size:0.85rem;">
-              Die genauen Lieferzeiten stehen in Ihrer Bestätigungsmail.
-            </p>
+            <label for="edit-date">Lieferdatum (optional)</label>
+            <input id="edit-date" type="date" style="width:var(--input-width);">
           </div>
 
-          <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <div class="toggle-container" style="margin-top:1.1rem;">
+            <span class="toggle-label-text">Spezielle Wünsche?</span>
+            <label class="toggle">
+              <input type="checkbox" id="edit-special-toggle">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div id="edit-special-wrapper">
+            <label for="edit-special">Spezielle Wünsche</label>
+            <textarea id="edit-special" style="width:var(--input-width); min-height:80px;">${specialRequests ? String(specialRequests).replace(/</g, "&lt;").replace(/>/g, "&gt;") : ""}</textarea>
+          </div>
+
+          <div style="margin-top:1.2rem; display:flex; gap:0.6rem; flex-wrap:wrap;">
             <button type="button" class="btn btn-primary" id="update-btn">Änderungen speichern</button>
-            <button type="button" class="btn" id="delete-btn" style="background:#552222; color:#ffbbbb;">
+            <button type="button" class="btn btn-ghost-danger" id="delete-btn">
               Bestellung stornieren
             </button>
           </div>
 
-          <p id="edit-status" class="status" style="margin-top:0.8rem;"></p>
+          <p id="edit-status" class="status" style="margin-top:0.9rem;"></p>
         </div>
       `;
 
       resultEl.style.display = "block";
 
-      const updateBtn = document.getElementById("update-btn");
-      const deleteBtn = document.getElementById("delete-btn");
-      const editStatus = document.getElementById("edit-status");
       const editZip = document.getElementById("edit-zip");
-      const editZipStatus = document.getElementById("edit-zip-status");
       const editCity = document.getElementById("edit-city");
+      const editZipStatus = document.getElementById("edit-zip-status");
       const editCityStatus = document.getElementById("edit-city-status");
-      const editSize = document.getElementById("edit-size");
-      const editStreet = document.getElementById("edit-street");
       const editDateToggle = document.getElementById("edit-date-toggle");
       const editDateWrapper = document.getElementById("edit-date-wrapper");
-      const editDateInput = document.getElementById("edit-date");
+      const editDate = document.getElementById("edit-date");
+      const editSpecialToggle = document.getElementById("edit-special-toggle");
+      const editSpecialWrapper = document.getElementById("edit-special-wrapper");
+      const editSpecialTextarea = document.getElementById("edit-special");
 
-      // Initial Date-Toggle-Zustand
+      editDate.setAttribute("min", minDate);
+      editDate.setAttribute("max", MAX_DELIVERY_DATE);
+
       if (date) {
         editDateToggle.checked = true;
         editDateWrapper.classList.add("visible");
-        editDateInput.disabled = false;
+        editDate.value = safeDate;
+        editDate.disabled = false;
       } else {
         editDateToggle.checked = false;
         editDateWrapper.classList.remove("visible");
-        editDateInput.disabled = true;
+        editDate.disabled = true;
       }
 
-      function resetEditCityValidation() {
-        editCityStatus.textContent = "";
-        editCityStatus.style.color = "var(--gold-light)";
-        editCity.style.borderColor = "";
+      if (specialRequests && String(specialRequests).trim() !== "") {
+        editSpecialToggle.checked = true;
+        editSpecialWrapper.classList.add("visible");
+        editSpecialTextarea.disabled = false;
+      } else {
+        editSpecialToggle.checked = false;
+        editSpecialWrapper.classList.remove("visible");
+        editSpecialTextarea.disabled = true;
       }
+
+      editDateToggle.addEventListener("change", () => {
+        const visible = editDateToggle.checked;
+        editDateWrapper.classList.toggle("visible", visible);
+        editDate.disabled = !visible;
+        if (!visible) {
+          editDate.value = "";
+        } else {
+          const todayMin = getTomorrowDateStr();
+          editDate.setAttribute("min", todayMin);
+          editDate.setAttribute("max", MAX_DELIVERY_DATE);
+        }
+      });
+
+      editSpecialToggle.addEventListener("change", () => {
+        const visible = editSpecialToggle.checked;
+        editSpecialWrapper.classList.toggle("visible", visible);
+        editSpecialTextarea.disabled = !visible;
+        if (!visible) {
+          editSpecialTextarea.value = "";
+        }
+      });
 
       function validateEditZipAndCity() {
         const val = editZip.value.trim();
-        resetEditCityValidation();
         editZipStatus.textContent = "";
+        editCityStatus.textContent = "";
         editZipStatus.style.color = "var(--gold-light)";
-
-        if (!val) {
-          editZipStatus.textContent = "";
-          updateBtn.disabled = true;
-          return false;
-        }
+        editCityStatus.style.color = "var(--gold-light)";
 
         if (val.length < 5) {
-          updateBtn.disabled = true;
+          editCity.value = "";
           return false;
         }
 
         if (!allowedZips.includes(val)) {
+          editCity.value = "";
           editZipStatus.textContent = "❌ Diese PLZ liegt außerhalb unseres Liefergebiets.";
-          editZipStatus.style.color = "#ff6b6b";
-          updateBtn.disabled = true;
+          editZipStatus.style.color = "var(--error)";
           return false;
         }
 
-        editZipStatus.textContent = "✔ Innerhalb unseres Liefergebiets.";
-        editZipStatus.style.color = "var(--gold-light)";
-
-        const expected = getCityByZip(val);
-        if (expected) {
-          if (!editCity.value) {
-            editCity.value = expected;
-          }
-          const typed = normalizeCity(editCity.value);
-          const expNorm = normalizeCity(expected);
-
-          if (typed !== expNorm) {
-            editCityStatus.textContent = `Der Ort passt nicht zur eingegebenen PLZ (erwartet: „${expected}“).`;
-            editCityStatus.style.color = "#ff6b6b";
-            editCity.style.borderColor = "rgba(255,0,0,0.5)";
-            updateBtn.disabled = true;
-            return false;
-          } else {
-            editCityStatus.textContent = "✔ Ort passt zur PLZ.";
-            editCityStatus.style.color = "var(--gold-light)";
-            editCity.style.borderColor = "var(--gold)";
-          }
+        const expectedCity = getCityByZip(val);
+        if (!expectedCity) {
+          editCity.value = "";
+          editZipStatus.textContent = "❌ Zu dieser PLZ ist kein Ort hinterlegt.";
+          editZipStatus.style.color = "var(--error)";
+          return false;
         }
 
-        updateBtn.disabled = false;
+        if (!editCity.value.trim()) {
+          editCity.value = expectedCity;
+          return true;
+        }
+
+        if (normalizeCity(expectedCity) !== normalizeCity(editCity.value.trim())) {
+          editCityStatus.textContent = "❌ Ort passt nicht zur angegebenen PLZ.";
+          editCityStatus.style.color = "var(--error)";
+          return false;
+        }
+
+        editZipStatus.textContent = "";
+        editCityStatus.textContent = "";
         return true;
       }
 
       editZip.addEventListener("input", validateEditZipAndCity);
       editCity.addEventListener("input", validateEditZipAndCity);
-      validateEditZipAndCity();
 
-      editDateToggle.addEventListener("change", () => {
-        const visible = editDateToggle.checked;
-        editDateWrapper.classList.toggle("visible", visible);
-        editDateInput.disabled = !visible;
-        if (!visible) {
-          editDateInput.value = "";
-        }
-      });
+      const updateBtn = document.getElementById("update-btn");
+      const deleteBtn = document.getElementById("delete-btn");
+      const editStatus = document.getElementById("edit-status");
 
       // UPDATE
       updateBtn.addEventListener("click", async () => {
-        const newSize = editSize.value;
-        const newStreet = editStreet.value.trim();
+        const newName = document.getElementById("edit-name").value.trim();
+        const newSize = document.getElementById("edit-size").value;
+        const newStreet = document.getElementById("edit-street").value.trim();
         const newZip = editZip.value.trim();
         const newCity = editCity.value.trim();
-        const newDate = editDateInput.value || null;
+        const newDateToggle = editDateToggle.checked;
+        const newDate = editDate.value || null;
+        const newSpecialToggle = editSpecialToggle.checked;
+        const newSpecial = newSpecialToggle ? editSpecialTextarea.value.trim() : null;
 
         if (!newSize || !newStreet || !newZip || !newCity) {
-          editStatus.style.color = "#ff6b6b";
+          editStatus.style.color = "var(--error)";
           editStatus.textContent = "Bitte füllen Sie alle Pflichtfelder aus.";
           return;
         }
 
-        const expectedCity = getCityByZip(newZip);
-        if (!expectedCity || normalizeCity(expectedCity) !== normalizeCity(newCity)) {
-          editStatus.style.color = "#ff6b6b";
-          editStatus.textContent = "Der Ort passt nicht zur eingegebenen PLZ.";
+        if (!validateEditZipAndCity()) {
+          editStatus.style.color = "var(--error)";
+          editStatus.textContent = "Bitte prüfen Sie PLZ und Ort.";
           return;
+        }
+
+        if (newDateToggle && newDate) {
+          const min = getTomorrowDateStr();
+          if (newDate < min) {
+            editStatus.style.color = "var(--error)";
+            editStatus.textContent = "Das Lieferdatum darf nicht früher als morgen liegen.";
+            return;
+          }
+          if (newDate > MAX_DELIVERY_DATE) {
+            editStatus.style.color = "var(--error)";
+            editStatus.textContent = "Das Lieferdatum darf nicht nach dem 24.12.2025 liegen.";
+            return;
+          }
         }
 
         editStatus.style.color = "var(--gold-light)";
@@ -1099,28 +1343,30 @@ function setupLookup() {
             body: JSON.stringify({
               email: currentEmail,
               customerId: currentCustomerId,
+              name: newName || null,
               size: newSize,
               street: newStreet,
               zip: newZip,
-              city: expectedCity,
-              date: editDateToggle.checked ? newDate : null
+              city: newCity,
+              date: newDateToggle ? newDate : null,
+              specialRequests: newSpecial || null
             })
           });
 
           const dataUpdate = await respUpdate.json();
 
           if (!respUpdate.ok) {
-            editStatus.style.color = "#ff6b6b";
+            editStatus.style.color = "var(--error)";
             editStatus.textContent = dataUpdate.error || "Fehler beim Aktualisieren.";
             return;
           }
 
-          editStatus.style.color = "#7CFF93";
-          editStatus.textContent = "Bestellung aktualisiert. Sie erhalten in Kürze eine Bestätigungsmail. Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner.";
+          editStatus.style.color = "var(--success)";
+          editStatus.textContent = "Die Bestellung wurde aktualisiert. Eine Bestätigung wurde per E-Mail versendet.";
 
         } catch (err) {
           console.error(err);
-          editStatus.style.color = "#ff6b6b";
+          editStatus.style.color = "var(--error)";
           editStatus.textContent = "Der Server ist momentan nicht erreichbar. Bitte versuchen Sie es später erneut.";
         }
       });
@@ -1147,80 +1393,81 @@ function setupLookup() {
           const dataDelete = await respDelete.json();
 
           if (!respDelete.ok) {
-            editStatus.style.color = "#ff6b6b";
+            editStatus.style.color = "var(--error)";
             editStatus.textContent = dataDelete.error || "Fehler beim Stornieren.";
             return;
           }
 
-          editStatus.style.color = "#7CFF93";
-          editStatus.textContent = "Bestellung storniert. Sie erhalten in Kürze eine Bestätigungsmail. Bitte prüfen Sie auch Ihren Spam- bzw. Werbungsordner.";
+          editStatus.style.color = "var(--success)";
+          editStatus.textContent = "Die Bestellung wurde storniert. Eine Bestätigung wurde per E-Mail versendet.";
           setTimeout(() => {
             resultEl.style.display = "none";
             resultEl.innerHTML = "";
-          }, 2000);
+          }, 2500);
 
         } catch (err) {
           console.error(err);
-          editStatus.style.color = "#ff6b6b";
+          editStatus.style.color = "var(--error)";
           editStatus.textContent = "Der Server ist momentan nicht erreichbar. Bitte versuchen Sie es später erneut.";
         }
       });
 
     } catch (err) {
       console.error(err);
-      statusEl.style.color = "#ff6b6b";
+      statusEl.style.color = "var(--error)";
       statusEl.textContent = "Der Server ist momentan nicht erreichbar. Bitte versuchen Sie es später erneut.";
     }
   });
 }
-</script>
 
-<!-- SCHNEE -->
-<script>
-const canvas = document.getElementById("snow-canvas");
-const ctx = canvas.getContext("2d");
+// ------- SCHNEE-ANIMATION -------
+function setupSnow() {
+  const canvas = document.getElementById("snow-canvas");
+  if (!canvas || !canvas.getContext) return;
+  const ctx = canvas.getContext("2d");
 
-function resize(){
-  canvas.width = innerWidth;
-  canvas.height = innerHeight;
+  function resize(){
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const snowflakeImage = new Image();
+  snowflakeImage.src = "schneeflocke.png";
+
+  let flakes = [];
+  for(let i = 0; i < 120; i++){
+    flakes.push({
+      x: Math.random()*innerWidth,
+      y: Math.random()*innerHeight,
+      size: 8+Math.random()*10,
+      speedY: 0.5+Math.random()*1.2,
+      speedX: -0.5+Math.random(),
+      rot: Math.random()*Math.PI*2,
+      rotSpeed: -0.01+Math.random()*0.02
+    });
+  }
+
+  function loop(){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    flakes.forEach(f=>{
+      f.y += f.speedY;
+      f.x += f.speedX;
+      f.rot += f.rotSpeed;
+
+      if(f.y > innerHeight){ f.y = -f.size; f.x = Math.random()*innerWidth; }
+
+      ctx.save();
+      ctx.translate(f.x,f.y);
+      ctx.rotate(f.rot);
+      ctx.drawImage(snowflakeImage,-f.size/2,-f.size/2,f.size,f.size);
+      ctx.restore();
+    });
+    requestAnimationFrame(loop);
+  }
+  snowflakeImage.onload = loop;
 }
-resize();
-onresize = resize;
-
-const snowflakeImage = new Image();
-snowflakeImage.src = "schneeflocke.png";
-
-let flakes = [];
-for(let i=0;i<120;i++){
-  flakes.push({
-    x: Math.random()*innerWidth,
-    y: Math.random()*innerHeight,
-    size: 8+Math.random()*10,
-    speedY: 0.5+Math.random()*1.2,
-    speedX: -0.5+Math.random(),
-    rot: Math.random()*Math.PI*2,
-    rotSpeed: -0.01+Math.random()*0.02
-  });
-}
-
-function loop(){
-  ctx.clearRect(0,0,innerWidth,innerHeight);
-  flakes.forEach(f=>{
-    f.y += f.speedY;
-    f.x += f.speedX;
-    f.rot += f.rotSpeed;
-
-    if(f.y > innerHeight){ f.y = -f.size; f.x = Math.random()*innerWidth; }
-
-    ctx.save();
-    ctx.translate(f.x,f.y);
-    ctx.rotate(f.rot);
-    ctx.drawImage(snowflakeImage,-f.size/2,-f.size/2,f.size,f.size);
-    ctx.restore();
-  });
-  requestAnimationFrame(loop);
-}
-snowflakeImage.onload = loop;
 </script>
 
 </body>
