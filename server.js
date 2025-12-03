@@ -328,6 +328,29 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     border-color: #b89f4a;
   }
 
+  .copy-btn {
+    width: 90px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #d8c27a;
+    background: #f5e5b8;
+    color: #2f2b1b;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  .copy-btn:active {
+    background: #e3d095;
+  }
+
+  .copy-hint {
+    font-size: 12px;
+    color: #6b5d33;
+    margin-top: 4px;
+  }
+
   @media (max-width: 600px) {
     .card {
       margin: 0 10px;
@@ -341,6 +364,11 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     }
     .id-input {
       font-size: 15px;
+    }
+    .copy-btn {
+      width: 96px;
+      height: 34px;
+      font-size: 14px;
     }
   }
 </style>
@@ -371,8 +399,10 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
         <div class="id-row">
           <span class="id-label"><span class="label">Kunden-ID:</span></span>
           <div class="id-copy-box">
-            <input class="id-input" type="text" value="${customerId}" readonly>
+            <input class="id-input" id="customer-id-input" type="text" value="${customerId}" readonly>
+            <button class="copy-btn" onclick="(function(){ try { var el = document.getElementById('customer-id-input'); if (el && navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(el.value); } } catch(e) {} })();">Kopieren</button>
           </div>
+          <div class="copy-hint">Tippen Sie auf „Kopieren“ oder markieren Sie die ID, um sie zu kopieren.</div>
         </div>
       </div>
     </div>
