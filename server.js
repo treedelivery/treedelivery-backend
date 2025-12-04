@@ -65,6 +65,18 @@ const zipToCity = {
   "35745": "Herborn"
 };
 
+// ------- ZENTRALE PREISE (für Admin anpassbar) -------
+const PRICES = {
+  small: 65,
+  medium: 85,
+  large: 100
+};
+
+// API für Frontend – Preise abrufen
+app.get("/prices", (req, res) => {
+  res.json(PRICES);
+});
+
 function getCityByZip(zip) {
   return zipToCity[zip] || null;
 }
