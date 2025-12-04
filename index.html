@@ -793,7 +793,8 @@ async function loadPrices() {
   const resp = await fetch(BACKEND_URL + "/prices");
   PRICE_DATA = await resp.json();
 
-  document.querySelectorAll(".tree-price").forEach(span => {
+  // HIER ändern:
+  document.querySelectorAll(".size-price").forEach(span => {
     const size = span.dataset.size;
     if (PRICE_DATA[size]) {
       span.textContent = `${PRICE_DATA[size]}€`;
