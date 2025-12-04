@@ -176,7 +176,7 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
   const deliveryBlock = buildDeliveryLinesHTML(date);
 
   const myOrderBlock =
-    "Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf unserer Website <strong>treedelivery.de</strong> unter „Meine Bestellung“ bearbeiten oder stornieren.";
+    "Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf unserer <strong>Website</strong> unter „Meine Bestellung“ bearbeiten oder stornieren.";
 
   const paymentBlock = includePaymentInfo
     ? `<p><strong>Die Bezahlung erfolgt Bar bei Lieferung.</strong></p>`
