@@ -456,6 +456,46 @@
     min-height: 480px;
   }
 }
+
+.tree-size-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-top: 0.6rem;
+}
+
+.tree-size-card {
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(216,194,122,0.35);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.tree-size-card:hover {
+  background: rgba(216,194,122,0.15);
+  transform: translateY(-2px);
+}
+
+.tree-size-card.selected {
+  background: rgba(216,194,122,0.25);
+  border-color: var(--gold);
+  box-shadow: 0 0 18px rgba(216,194,122,0.4);
+}
+
+.tree-size-title {
+  font-size: 1.05rem;
+  color: var(--gold-light);
+  font-weight: 600;
+}
+
+.tree-size-desc {
+  font-size: 0.88rem;
+  opacity: 0.85;
+  margin-top: 0.2rem;
+}
+
   </style>
 </head>
 
@@ -480,14 +520,26 @@
   <section id="tab-bestellen" class="card">
     <h2>🎄 Baum bestellen</h2>
 
-    <form id="order-form">
-      <label for="size">Baumgröße *</label>
-      <select id="size">
-        <option value="">Bitte wählen…</option>
-			<option value="small">S – ca. 1,5 m</option>
-			<option value="medium">M – ca. 1,8 m</option>
-			<option value="large">L – ca. 2 m</option>
-      </select>
+<label>Baumgröße *</label>
+
+<div class="tree-size-container" id="tree-size-container">
+  <div class="tree-size-card" data-size="small">
+    <div class="tree-size-title">S – ca. 1,5 m</div>
+    <div class="tree-size-desc">Kompakt & ideal für kleinere Räume</div>
+  </div>
+
+  <div class="tree-size-card" data-size="medium">
+    <div class="tree-size-title">M – ca. 1,8 m</div>
+    <div class="tree-size-desc">Beliebteste Größe – passt überall</div>
+  </div>
+
+  <div class="tree-size-card" data-size="large">
+    <div class="tree-size-title">L – ca. 2 m</div>
+    <div class="tree-size-desc">Groß & beeindruckend</div>
+  </div>
+</div>
+
+<input type="hidden" id="size">
       <label for="name">Name *</label>
       <input id="name" autocomplete="name" disabled>
 
@@ -739,6 +791,28 @@ function setupFormLogic() {
   const priceDisplay = document.getElementById("price-display");
   const zipStatus = document.getElementById("zip-status");
   const cityStatus = document.getElementById("city-status");
+
+    // ------- Baumgrößen-Auswahlkarten -------
+  const sizeCards = document.querySelectorAll(".tree-size-card");
+
+  sizeCards.forEach(card => {
+    card.addEventListener("click", () => {
+
+      sizeCards.forEach(c => c.classList.remove("selected"));
+      card.classList.add("selected");
+
+      const selectedSize = card.dataset.size;
+      size.value = selectedSize;
+
+      if (PRICE_DATA) {
+        const price = PRICE_DATA[selectedSize] || "—";
+        priceDisplay.textContent = `Preis: ${price}€`;
+      }
+
+      // Restliche Felder aktivieren
+      nameInput.disabled = false;
+    });
+  });
 
   const minDate = getTomorrowDateStr();
   dateInput.setAttribute("min", minDate);
