@@ -1078,23 +1078,6 @@ function openOrderModal(customerId, email, date, updated = false) {
   backdrop.classList.add("visible");
 }
 
-function openOrderModal(customerId, email, date) {
-  const backdrop = document.getElementById("order-modal-backdrop");
-  const idEl = document.getElementById("modal-customer-id");
-  const mailEl = document.getElementById("modal-email");
-  const mainText = document.getElementById("modal-text-main");
-
-  idEl.textContent = customerId || "—";
-  mailEl.textContent = email || "Ihre E-Mail-Adresse";
-
-  if (date) {
-    mainText.textContent = `Ihr Baum wird am ${date} geliefert.`;
-  } else {
-    mainText.textContent = "Ihr Baum wird in etwa zwei Tagen geliefert.";
-  }
-
-  backdrop.classList.add("visible");
-}
 
 // ------- Bestellung abrufen + bearbeiten/stornieren -------
 function setupLookup() {
