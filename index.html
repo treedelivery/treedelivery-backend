@@ -96,39 +96,25 @@
     }
 
 
-	  /* Grundkarte bleibt wie bei S & L */
-
-.tree-size-card {
-  position: relative;
-  padding: 1rem 1.2rem;
-  border-radius: 1rem;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(216,194,122,0.35);
-  cursor: pointer;
-  transition: 0.25s;
+.bestseller-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: linear-gradient(135deg, #d8c27a, #f4e5b7);
+  color: #000;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+  box-shadow: 0 0 10px rgba(216, 194, 122, 0.4);
+  z-index: 5;
 }
 
-/* --- NEUER dauerhafter Glow NUR für M-Karte --- */
-.tree-size-card[data-size="medium"] {
+	  .tree-size-card[data-size="large"] {
   box-shadow:
-    0 0 10px rgba(216, 194, 122, 0.25),   /* weicher Rand */
-    0 0 18px rgba(216, 194, 122, 0.15);   /* ganz leichter Schimmer */
+    0 0 10px rgba(216, 194, 122, 0.25),
+    0 0 18px rgba(216, 194, 122, 0.15);
   border-color: rgba(216,194,122,0.55);
-  animation: subtlePulse 3s ease-in-out infinite;
-}
-
-/* Mini-Puls-Effekt → kaum sichtbar, aber gibt "Premium-Feeling" */
-@keyframes subtlePulse {
-  0%   { box-shadow: 0 0 10px rgba(216,194,122,0.22), 0 0 18px rgba(216,194,122,0.12); }
-  50%  { box-shadow: 0 0 14px rgba(216,194,122,0.32), 0 0 22px rgba(216,194,122,0.18); }
-  100% { box-shadow: 0 0 10px rgba(216,194,122,0.22), 0 0 18px rgba(216,194,122,0.12); }
-}
-
-/* Wenn ausgewählt soll der SEHR viel stärkere Glow weiter funktionieren */
-.tree-size-card.selected {
-  background: rgba(216,194,122,0.25);
-  border-color: var(--gold);
-  box-shadow: 0 0 22px rgba(216,194,122,0.40);
 }
 
 
@@ -568,20 +554,15 @@
   </div>
 
 <div class="tree-size-card" data-size="medium">
-  <span class="bestseller-badge">Bestseller</span>
-
-  <div class="bestseller-particles">
-    <span></span><span></span><span></span>
-  </div>
-
   <div class="tree-size-title">M – 1,5–1,8 m</div>
   <div class="tree-size-desc">Nordmanntanne – beliebteste Größe, passt überall</div>
 </div>
 
-  <div class="tree-size-card" data-size="large">
-    <div class="tree-size-title">L – 1,8–2,1 m</div>
-    <div class="tree-size-desc">Nordmanntanne – groß & beeindruckend</div>
-  </div>
+<div class="tree-size-card" data-size="large">
+  <span class="bestseller-badge">Bestseller</span>
+  <div class="tree-size-title">L – 1,8–2,1 m</div>
+  <div class="tree-size-desc">Nordmanntanne – groß & beeindruckend</div>
+</div>
 
   <div class="tree-size-card" data-size="xl">
     <div class="tree-size-title">XL – 2,1–2,6 m</div>
