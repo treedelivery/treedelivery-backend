@@ -441,6 +441,10 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
+	
+	.card {
+    min-height: 520px; /* gleiche Höhe für alle Tabs */
+}
   </style>
 </head>
 
@@ -466,16 +470,15 @@
     <h2>🎄 Baum bestellen</h2>
 
     <form id="order-form">
-      <label for="name">Name *</label>
-      <input id="name" autocomplete="name" disabled>
-
       <label for="size">Baumgröße *</label>
       <select id="size">
         <option value="">Bitte wählen…</option>
-        <option value="small" data-price="60">S – ca. 1,5 m – 60€</option>
-        <option value="medium" data-price="90">M – ca. 1,8 m – 90€</option>
-        <option value="large" data-price="100">L – ca. 2,1 m – 100€</option>
+        <option value="small" data-price="60">S – ca. 1,5 m – 65€</option>
+        <option value="medium" data-price="90">M – ca. 1,8 m – 85€</option>
+        <option value="large" data-price="100">L – ca. 2 m – 100€</option>
       </select>
+      <label for="name">Name *</label>
+      <input id="name" autocomplete="name" disabled>
 
       <label for="street">Straße &amp; Hausnummer *</label>
       <input id="street" autocomplete="street-address" disabled>
@@ -493,7 +496,6 @@
 
       <label for="email-confirm">E-Mail bestätigen *</label>
       <input id="email-confirm" type="email" autocomplete="email" disabled>
-      <p id="email-status" class="status"></p>
 
       <div class="toggle-container">
         <span class="toggle-label-text">Wunschtermin?</span>
@@ -553,7 +555,6 @@
       <input id="lookup-id">
       <div id="id-info-box" class="info-box">
         Ihre Kunden-ID finden Sie in der Bestätigungs-E-Mail, die Sie nach der Bestellung erhalten haben.
-        Prüfen Sie bitte auch den Spam- bzw. Werbungsordner, falls Sie die E-Mail nicht im Posteingang sehen.
       </div>
 
       <button class="btn btn-primary" type="submit">Bestellung suchen</button>
@@ -577,25 +578,24 @@
 <div id="order-modal-backdrop" class="modal-backdrop">
   <div class="modal">
     <div class="modal-glow">🎄</div>
-    <h3>Ihre Bestellung ist eingegangen</h3>
+    <h3>Vielen Dank für Ihre Bestellung!</h3>
+
     <p id="modal-text-main">
-      Vielen Dank für Ihre Bestellung bei TreeDelivery.
+      Wir haben Ihre Bestellung erfolgreich erhalten.
     </p>
 
     <div class="modal-highlight">
-      <p style="margin-bottom:0.3rem;"><strong>Ihre Kunden-ID:</strong></p>
+      <p><strong>Kunden-ID:</strong></p>
       <p id="modal-customer-id" class="modal-id"></p>
+
       <p style="margin-top:0.6rem; font-size:0.85rem;">
         Eine Bestätigungs-E-Mail wurde an<br>
         <span id="modal-email" style="font-weight:600;"></span> gesendet.
       </p>
     </div>
 
-    <p style="font-size:0.9rem;">
-      Bitte prüfen Sie auch den Spam- bzw. Werbungsordner, falls Sie keine E-Mail im Posteingang sehen.
-    </p>
     <p class="modal-footer-text">
-      Mit Ihrer Kunden-ID können Sie Ihre Bestellung auf treedelivery.de unter „Meine Bestellung“ bearbeiten oder stornieren.
+      Sie können Ihre Bestellung jederzeit unter „Meine Bestellung“ ansehen, anpassen oder stornieren.
     </p>
 
     <button id="modal-close-btn" class="btn btn-primary" type="button" style="margin-top:1rem;">
@@ -702,6 +702,7 @@ function setupInfoIcon() {
 
 // ------- Formular-Logik Bestellung -------
 function setupFormLogic() {
+
   const nameInput = document.getElementById("name");
   const size = document.getElementById("size");
   const street = document.getElementById("street");
@@ -719,7 +720,6 @@ function setupFormLogic() {
   const priceDisplay = document.getElementById("price-display");
   const zipStatus = document.getElementById("zip-status");
   const cityStatus = document.getElementById("city-status");
-  const emailStatus = document.getElementById("email-status");
 
   const minDate = getTomorrowDateStr();
   dateInput.setAttribute("min", minDate);
@@ -739,6 +739,8 @@ function setupFormLogic() {
       email.value = "";
       emailConfirm.value = "";
       street.disabled = true;
+	  const nameField = document.getElementById("name");
+	  nameField.disabled = true;
       zip.disabled = true;
       city.disabled = true;
       email.disabled = true;
@@ -755,9 +757,7 @@ function setupFormLogic() {
       specialTextarea.value = "";
       orderBtn.disabled = true;
       zipStatus.textContent = "";
-      cityStatus.textContent = "";
-      emailStatus.textContent = "";
-    }
+      cityStatus.textContent = "";    }
   });
 
   nameInput.addEventListener("input", () => {
@@ -898,14 +898,10 @@ function setupFormLogic() {
 
   emailConfirm.addEventListener("input", () => {
     if (email.value === emailConfirm.value && email.value.trim() !== "") {
-      emailStatus.textContent = "✔ E-Mail bestätigt";
-      emailStatus.style.color = "var(--success)";
       dateToggle.disabled = false;
       specialToggle.disabled = false;
       orderBtn.disabled = false;
     } else {
-      emailStatus.textContent = "❌ E-Mail-Adressen stimmen nicht überein.";
-      emailStatus.style.color = "var(--error)";
       dateToggle.disabled = true;
       dateToggle.checked = false;
       dateWrapper.classList.remove("visible");
@@ -1025,7 +1021,7 @@ function setupOrderSubmit() {
       statusEl.style.color = "var(--success)";
       statusEl.textContent = "Bestellung gespeichert. Eine Bestätigung wurde per E-Mail versendet.";
 
-      openOrderModal(data.customerId, email);
+      openOrderModal(data.customerId, email, date);
 
     } catch (err) {
       console.error(err);
@@ -1053,13 +1049,20 @@ function setupModal() {
   });
 }
 
-function openOrderModal(customerId, email) {
+function openOrderModal(customerId, email, date) {
   const backdrop = document.getElementById("order-modal-backdrop");
   const idEl = document.getElementById("modal-customer-id");
   const mailEl = document.getElementById("modal-email");
+  const mainText = document.getElementById("modal-text-main");
 
   idEl.textContent = customerId || "—";
   mailEl.textContent = email || "Ihre E-Mail-Adresse";
+
+  if (date) {
+    mainText.textContent = `Ihr Baum wird am ${date} geliefert.`;
+  } else {
+    mainText.textContent = "Ihr Baum wird in etwa zwei Tagen geliefert.";
+  }
 
   backdrop.classList.add("visible");
 }
