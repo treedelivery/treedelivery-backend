@@ -94,63 +94,44 @@
       transition: 0.25s;
       font-size: 0.98rem;
     }
-	  
-.bestseller-badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: linear-gradient(135deg, #d8c27a, #f3e4b0);
-  color: #000;
-  font-weight: 700;
-  font-size: 0.65rem;
-  padding: 3px 8px;
-  border-radius: 0.5rem;
-  text-transform: uppercase;
-  pointer-events: none;
-  z-index: 3;
 
-  /* dezenter Glow */
-  box-shadow: 
-      0 0 6px rgba(255, 220, 140, 0.7),
-      0 0 12px rgba(255, 240, 180, 0.4);
-}
 
-/* Container, damit Glow-Partikel nicht überlaufen */
+	  /* Grundkarte bleibt wie bei S & L */
+
 .tree-size-card {
   position: relative;
-  overflow: visible;
+  padding: 1rem 1.2rem;
+  border-radius: 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(216,194,122,0.35);
+  cursor: pointer;
+  transition: 0.25s;
 }
 
-/* kleine animierte Partikel */
-.bestseller-particles {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 26px;
-  height: 26px;
-  pointer-events: none;
-  z-index: 2;
+/* --- NEUER dauerhafter Glow NUR für M-Karte --- */
+.tree-size-card[data-size="medium"] {
+  box-shadow:
+    0 0 10px rgba(216, 194, 122, 0.25),   /* weicher Rand */
+    0 0 18px rgba(216, 194, 122, 0.15);   /* ganz leichter Schimmer */
+  border-color: rgba(216,194,122,0.55);
+  animation: subtlePulse 3s ease-in-out infinite;
 }
 
-.bestseller-particles span {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  background: rgba(255, 230, 150, 0.8);
-  border-radius: 50%;
-  animation: particle-float 1.8s infinite ease-in-out;
-  filter: blur(1px);
+/* Mini-Puls-Effekt → kaum sichtbar, aber gibt "Premium-Feeling" */
+@keyframes subtlePulse {
+  0%   { box-shadow: 0 0 10px rgba(216,194,122,0.22), 0 0 18px rgba(216,194,122,0.12); }
+  50%  { box-shadow: 0 0 14px rgba(216,194,122,0.32), 0 0 22px rgba(216,194,122,0.18); }
+  100% { box-shadow: 0 0 10px rgba(216,194,122,0.22), 0 0 18px rgba(216,194,122,0.12); }
 }
 
-.bestseller-particles span:nth-child(1) { top: 12px; left: 2px;  animation-delay: 0s; }
-.bestseller-particles span:nth-child(2) { top: 4px;  left: 14px; animation-delay: .3s; }
-.bestseller-particles span:nth-child(3) { top: 18px; left: 16px; animation-delay: .6s; }
-
-@keyframes particle-float {
-  0%   { transform: translateY(0) scale(1); opacity: 1; }
-  50%  { transform: translateY(-4px) scale(1.2); opacity: 0.9; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+/* Wenn ausgewählt soll der SEHR viel stärkere Glow weiter funktionieren */
+.tree-size-card.selected {
+  background: rgba(216,194,122,0.25);
+  border-color: var(--gold);
+  box-shadow: 0 0 22px rgba(216,194,122,0.40);
 }
+
+
 	  
     .nav-tabs button.active {
       background: var(--gold);
