@@ -23,6 +23,23 @@
       box-sizing: border-box;
     }
 
+	  .size-row {
+  display: grid;
+  grid-template-columns: auto 40px auto 1fr auto;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
+}
+
+.spacer {
+  width: 40px;
+}
+
+.flex-spacer {
+  width: 100%;
+}
+
+	  
     body {
       margin: 0;
       background: var(--dark);
@@ -342,7 +359,7 @@
 
 .size-row {
   display: grid;
-  grid-template-columns: auto 70px auto 1fr auto;
+  grid-template-columns: auto 50px auto 1fr auto;
   /*   1     2      3     4    5
        S   (Platz) Preis (viel) Badge */
   align-items: center;
@@ -600,13 +617,11 @@
 
 <!-- S -->
 <div class="tree-size-card" data-size="small">
-<div class="size-row">
-  <span class="size-left">L</span>
-  <span class="spacer"></span>
-  <span class="size-price" data-size="large"></span>
-  <span class="flex-spacer"></span>
-  <span class="size-badge bestseller">Bestseller</span>
-</div>
+  <div class="size-row">
+    <span class="size-left">S</span>
+    <span class="size-price" data-size="small"></span>
+    <span class="size-badge"></span>
+  </div>
   <div class="tree-size-desc">
     Nordmanntanne • 1,2–1,5 m
   </div>
@@ -614,13 +629,11 @@
 
 <!-- M -->
 <div class="tree-size-card" data-size="medium">
-<div class="size-row">
-  <span class="size-left">L</span>
-  <span class="spacer"></span>
-  <span class="size-price" data-size="large"></span>
-  <span class="flex-spacer"></span>
-  <span class="size-badge bestseller">Bestseller</span>
-</div>
+  <div class="size-row">
+    <span class="size-left">M</span>
+    <span class="size-price" data-size="medium"></span>
+    <span class="size-badge"></span>
+  </div>
   <div class="tree-size-desc">
     Nordmanntanne • 1,5–1,8 m
   </div>
@@ -628,13 +641,11 @@
 
 <!-- L (Bestseller) -->
 <div class="tree-size-card" data-size="large">
-<div class="size-row">
-  <span class="size-left">L</span>
-  <span class="spacer"></span>
-  <span class="size-price" data-size="large"></span>
-  <span class="flex-spacer"></span>
-  <span class="size-badge bestseller">Bestseller</span>
-</div>
+  <div class="size-row">
+    <span class="size-left">L</span>
+    <span class="size-price" data-size="large"></span>
+    <span class="size-badge bestseller">Bestseller</span>
+  </div>
   <div class="tree-size-desc">
     Nordmanntanne • 1,8–2,1 m
   </div>
@@ -642,13 +653,11 @@
 
 <!-- XL -->
 <div class="tree-size-card" data-size="xl">
-<div class="size-row">
-  <span class="size-left">L</span>
-  <span class="spacer"></span>
-  <span class="size-price" data-size="large"></span>
-  <span class="flex-spacer"></span>
-  <span class="size-badge bestseller">Bestseller</span>
-</div>
+  <div class="size-row">
+    <span class="size-left">XL</span>
+    <span class="size-price" data-size="xl"></span>
+    <span class="size-badge"></span>
+  </div>
   <div class="tree-size-desc">
     Nordmanntanne • 2,1–2,6 m
   </div>
