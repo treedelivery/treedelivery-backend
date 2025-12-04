@@ -547,30 +547,52 @@
 
 <label>Baumgröße *</label>
 
+
 <div class="tree-size-container" id="tree-size-container">
 
+  <!-- S -->
   <div class="tree-size-card" data-size="small">
-    <div class="tree-size-title">S – 1,2–1,5 m</div>
-    <div class="tree-size-desc">Nordmanntanne – kompakt, ideal für kleinere Räume</div>
+    <div class="tree-size-title">
+      S – 1,2–1,5 m • <span class="tree-price" data-size="small"></span>
+    </div>
+    <div class="tree-size-desc">
+      Nordmanntanne – kompakt, ideal für kleinere Räume
+    </div>
   </div>
 
-<div class="tree-size-card" data-size="medium">
-  <div class="tree-size-title">M – 1,5–1,8 m</div>
-  <div class="tree-size-desc">Nordmanntanne – beliebteste Größe, passt überall</div>
-</div>
+  <!-- M -->
+  <div class="tree-size-card" data-size="medium">
+    <div class="tree-size-title">
+      M – 1,5–1,8 m • <span class="tree-price" data-size="medium"></span>
+    </div>
+    <div class="tree-size-desc">
+      Nordmanntanne – beliebteste Größe, passt überall
+    </div>
+  </div>
 
-<div class="tree-size-card" data-size="large">
-  <span class="bestseller-badge">Bestseller</span>
-  <div class="tree-size-title">L – 1,8–2,1 m</div>
-  <div class="tree-size-desc">Nordmanntanne – groß & beeindruckend</div>
-</div>
+  <!-- L (Bestseller) -->
+  <div class="tree-size-card" data-size="large">
+    <span class="bestseller-badge">Bestseller</span>
+    <div class="tree-size-title">
+      L – 1,8–2,1 m • <span class="tree-price" data-size="large"></span>
+    </div>
+    <div class="tree-size-desc">
+      Nordmanntanne – groß & beeindruckend
+    </div>
+  </div>
 
+  <!-- XL -->
   <div class="tree-size-card" data-size="xl">
-    <div class="tree-size-title">XL – 2,1–2,6 m</div>
-    <div class="tree-size-desc">Nordmanntanne – extra groß für hohe Räume</div>
+    <div class="tree-size-title">
+      XL – 2,1–2,6 m • <span class="tree-price" data-size="xl"></span>
+    </div>
+    <div class="tree-size-desc">
+      Nordmanntanne – extra groß für hohe Räume
+    </div>
   </div>
 
 </div>
+		  
 
 <input type="hidden" id="size">
 	  
@@ -709,6 +731,13 @@ const BACKEND_URL = "https://treedelivery-backend.onrender.com";
 async function loadPrices() {
   const resp = await fetch(BACKEND_URL + "/prices");
   PRICE_DATA = await resp.json();
+
+  document.querySelectorAll(".tree-price").forEach(span => {
+    const size = span.dataset.size;
+    if (PRICE_DATA[size]) {
+      span.textContent = `${PRICE_DATA[size]}€`;
+    }
+  });
 }
 
 loadPrices();
