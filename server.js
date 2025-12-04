@@ -67,9 +67,10 @@ const zipToCity = {
 
 // ------- ZENTRALE PREISE (für Admin anpassbar) -------
 const PRICES = {
-  small: 65,
-  medium: 85,
-  large: 100
+  small: 59,
+  medium: 79,
+  large: 99,
+  xl: 129
 };
 
 // API für Frontend – Preise abrufen
