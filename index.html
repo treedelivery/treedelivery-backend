@@ -94,7 +94,18 @@
       transition: 0.25s;
       font-size: 0.98rem;
     }
-
+	.bestseller-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, #d8c27a, #fbeab9);
+  color: #000;
+  font-weight: 700;
+  font-size: 0.75rem;
+  border-radius: 0.6rem;
+  margin-left: 0.6rem;
+  box-shadow: 0 0 8px rgba(255,220,140,0.6);
+  text-transform: uppercase;
+}
     .nav-tabs button.active {
       background: var(--gold);
       color: var(--dark);
@@ -529,10 +540,13 @@
     <div class="tree-size-desc">Nordmanntanne – kompakt, ideal für kleinere Räume</div>
   </div>
 
-  <div class="tree-size-card" data-size="medium">
-    <div class="tree-size-title">M – 1,5–1,8 m</div>
-    <div class="tree-size-desc">Nordmanntanne – beliebteste Größe, passt überall</div>
+<div class="tree-size-card" data-size="medium">
+  <div class="tree-size-title">
+    M – 1,5–1,8 m
+    <span class="bestseller-badge">Bestseller</span>
   </div>
+  <div class="tree-size-desc">Nordmanntanne – beliebteste Größe, passt überall</div>
+</div>
 
   <div class="tree-size-card" data-size="large">
     <div class="tree-size-title">L – 1,8–2,1 m</div>
