@@ -621,6 +621,14 @@
 <!-- LOGIK -->
 <script>
 const BACKEND_URL = "https://treedelivery-backend.onrender.com";
+	let PRICE_DATA = null;
+
+async function loadPrices() {
+  const resp = await fetch(BACKEND_URL + "/prices");
+  PRICE_DATA = await resp.json();
+}
+
+loadPrices();
 
 // ------- ZIPS & ORTE -------
 const allowedZips = [
@@ -739,40 +747,44 @@ function setupFormLogic() {
   dateInput.setAttribute("min", minDate);
   dateInput.setAttribute("max", MAX_DELIVERY_DATE);
 
-  size.addEventListener("change", () => {
-    const selected = size.options[size.selectedIndex];
-    const price = selected && selected.dataset.price ? selected.dataset.price : "—";
-    priceDisplay.textContent = "Preis: " + price + "€";
+ size.addEventListener("change", () => {
+  if (!PRICE_DATA) return;
 
-    nameInput.disabled = !size.value;
-    if (!size.value) {
-      nameInput.value = "";
-      street.value = "";
-      zip.value = "";
-      city.value = "";
-      email.value = "";
-      emailConfirm.value = "";
-      street.disabled = true;
-	  const nameField = document.getElementById("name");
-	  nameField.disabled = true;
-      zip.disabled = true;
-      city.disabled = true;
-      email.disabled = true;
-      emailConfirm.disabled = true;
-      dateToggle.checked = false;
-      dateToggle.disabled = true;
-      dateWrapper.classList.remove("visible");
-      dateInput.disabled = true;
-      dateInput.value = "";
-      specialToggle.checked = false;
-      specialToggle.disabled = true;
-      specialWrapper.classList.remove("visible");
-      specialTextarea.disabled = true;
-      specialTextarea.value = "";
-      orderBtn.disabled = true;
-      zipStatus.textContent = "";
-      cityStatus.textContent = "";    }
-  });
+  const val = size.value;
+  const price = PRICE_DATA[val] || "—";
+  priceDisplay.textContent = `Preis: ${price}€`;
+
+  nameInput.disabled = !val;
+
+  if (!val) {
+    nameInput.value = "";
+    street.value = "";
+    zip.value = "";
+    city.value = "";
+    email.value = "";
+    emailConfirm.value = "";
+    street.disabled = true;
+    const nameField = document.getElementById("name");
+    nameField.disabled = true;
+    zip.disabled = true;
+    city.disabled = true;
+    email.disabled = true;
+    emailConfirm.disabled = true;
+    dateToggle.checked = false;
+    dateToggle.disabled = true;
+    dateWrapper.classList.remove("visible");
+    dateInput.disabled = true;
+    dateInput.value = "";
+    specialToggle.checked = false;
+    specialToggle.disabled = true;
+    specialWrapper.classList.remove("visible");
+    specialTextarea.disabled = true;
+    specialTextarea.value = "";
+    orderBtn.disabled = true;
+    zipStatus.textContent = "";
+    cityStatus.textContent = "";
+  }
+});
 
   nameInput.addEventListener("input", () => {
     const val = nameInput.value.trim();
@@ -1045,20 +1057,26 @@ function setupOrderSubmit() {
 }
 
 // ------- Modal / Popup -------
-function setupModal() {
+function openOrderModal(customerId, email, date, updated = false) {
   const backdrop = document.getElementById("order-modal-backdrop");
-  const closeBtn = document.getElementById("modal-close-btn");
+  const idEl = document.getElementById("modal-customer-id");
+  const mailEl = document.getElementById("modal-email");
+  const mainText = document.getElementById("modal-text-main");
+  const titleEl = document.querySelector(".modal h3");
 
-  function close() {
-    backdrop.classList.remove("visible");
+  idEl.textContent = customerId || "—";
+  mailEl.textContent = email || "Ihre E-Mail-Adresse";
+
+  if (updated) {
+    titleEl.textContent = "Änderung gespeichert";
+    mainText.textContent = "Ihre Bestellung wurde erfolgreich aktualisiert.";
+  } else {
+    titleEl.textContent = "Vielen Dank für Ihre Bestellung!";
+    if (date) mainText.textContent = `Ihr Baum wird am ${date} geliefert.`;
+    else mainText.textContent = "Ihr Baum wird in etwa zwei Tagen geliefert.";
   }
 
-  closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) {
-      close();
-    }
-  });
+  backdrop.classList.add("visible");
 }
 
 function openOrderModal(customerId, email, date) {
@@ -1376,8 +1394,7 @@ function setupLookup() {
             return;
           }
 
-          editStatus.style.color = "var(--success)";
-          editStatus.textContent = "Die Bestellung wurde aktualisiert. Eine Bestätigung wurde per E-Mail versendet.";
+          openOrderModal(currentCustomerId, currentEmail, newDate, true);
 
         } catch (err) {
           console.error(err);
