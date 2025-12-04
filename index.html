@@ -95,7 +95,6 @@
       font-size: 0.98rem;
     }
 
-
 .bestseller-badge {
   position: absolute;
   top: 6px;
@@ -110,11 +109,11 @@
   z-index: 5;
 }
 
-	  .tree-size-card[data-size="large"] {
+.tree-size-card[data-size="large"] {
   box-shadow:
-    0 0 10px rgba(216, 194, 122, 0.25),
-    0 0 18px rgba(216, 194, 122, 0.15);
-  border-color: rgba(216,194,122,0.55);
+    0 0 6px rgba(216, 194, 122, 0.18),
+    0 0 12px rgba(216, 194, 122, 0.10);
+  border-color: rgba(216,194,122,0.40);
 }
 
 
@@ -489,6 +488,7 @@
 }
 
 .tree-size-card {
+  position: relative;       /* ← WICHTIG! Jetzt gehört das Badge zur Karte */
   padding: 1rem 1.2rem;
   border-radius: 1rem;
   background: rgba(255,255,255,0.04);
@@ -543,6 +543,7 @@
   <!-- BESTELLUNG -->
   <section id="tab-bestellen" class="card">
     <h2>🎄 Baum bestellen</h2>
+	  <form id="order-form">
 
 <label>Baumgröße *</label>
 
