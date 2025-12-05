@@ -3,35 +3,37 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { MongoClient } from "mongodb";
 import sgMail from "@sendgrid/mail";
+import jwt from "jsonwebtoken";
+import path from "path";
+import { fileURLToPath } from "url";
 
 dotenv.config();
 
-// ---- SendGrid initialisieren ----
+// -------------------------------------------------------
+// Express Setup
+// -------------------------------------------------------
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+// -------------------------------------------------------
+// File-path Setup (damit sendFile funktioniert)
+// -------------------------------------------------------
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// -------------------------------------------------------
+// SendGrid Setup
+// -------------------------------------------------------
 if (!process.env.SENDGRID_KEY) {
   console.error("WARNUNG: SENDGRID_KEY ist nicht gesetzt!");
 } else {
   sgMail.setApiKey(process.env.SENDGRID_KEY);
 }
 
-
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Geschützte Admin-Dateien
-app.get("/admin/:file", adminAuth, (req, res) => {
-  const file = req.params.file;
-  res.sendFile(path.join(__dirname, "admin", file));
-});
-
-
-const app = express();
-app.use(express.json());
-app.use(cors());
-
-// ------- MongoDB Connection -------
+// -------------------------------------------------------
+// MongoDB Connection
+// -------------------------------------------------------
 if (!process.env.MONGO_URL) {
   console.error("FEHLER: MONGO_URL ist nicht gesetzt!");
   process.exit(1);
@@ -42,7 +44,57 @@ await client.connect();
 const db = client.db("treedelivery");
 const orders = db.collection("orders");
 
-// ------- Allowed ZIPs -------
+// -------------------------------------------------------
+// Admin Auth Setup
+// -------------------------------------------------------
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const SECRET = process.env.ADMIN_SECRET;
+
+// Middleware für JWT-geschützte Admin-Routen
+function adminAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header) return res.status(403).json({ error: "Kein Token" });
+
+  try {
+    const token = header.split(" ")[1];
+    jwt.verify(token, SECRET);
+    next();
+  } catch {
+    return res.status(403).json({ error: "Token ungültig" });
+  }
+}
+
+// -------------------------------------------------------
+// Geschützte Admin-Dateien (dashboard.html, admin.js …)
+// -------------------------------------------------------
+app.get("/admin/:file", adminAuth, (req, res) => {
+  const pathToFile = path.join(__dirname, "admin", req.params.file);
+  res.sendFile(pathToFile);
+});
+
+// Login-Datei explizit öffentlich
+app.get("/admin/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin", "login.html"));
+});
+
+// -------------------------------------------------------
+// Admin Login API (liefert JWT Token)
+// -------------------------------------------------------
+app.post("/api/admin/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const token = jwt.sign({ admin: true }, SECRET, { expiresIn: "12h" });
+    return res.json({ success: true, token });
+  }
+
+  res.json({ success: false });
+});
+
+// -------------------------------------------------------
+// Preise, PLZ, City Mapping, Utilities
+// -------------------------------------------------------
 const allowedZips = [
   "57072", "57074", "57076", "57078", "57080",
   "57223", "57234", "57250", "57258", "57271",
@@ -52,7 +104,6 @@ const allowedZips = [
   "35745", "57555", "57399", "57610"
 ];
 
-// ------- PLZ → Ort Mapping -------
 const zipToCity = {
   "57072": "Siegen",
   "57074": "Siegen",
@@ -79,7 +130,6 @@ const zipToCity = {
   "35745": "Herborn"
 };
 
-// ------- ZENTRALE PREISE (für Admin anpassbar) -------
 const PRICES = {
   small: 59,
   medium: 79,
@@ -87,7 +137,6 @@ const PRICES = {
   xl: 129
 };
 
-// API für Frontend – Preise abrufen
 app.get("/prices", (req, res) => {
   res.json(PRICES);
 });
@@ -100,13 +149,10 @@ function normalizeCity(str) {
   return (str || "").trim().toLowerCase();
 }
 
-// ------- Datum-Helper -------
-
-// max Lieferdatum: 24.12.2025
 const DELIVERY_MAX_DATE_STR = "2025-12-24";
 
 function isDateAtLeastTomorrow(dateStr) {
-  if (!dateStr) return true; // kein Datum ist erlaubt
+  if (!dateStr) return true;
   const today = new Date();
   const min = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
   const selected = new Date(dateStr + "T00:00:00");
@@ -123,48 +169,12 @@ function isDateNotAfterMax(dateStr) {
 function formatDateGerman(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T00:00:00");
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}.${month}.${year}`;
+  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`;
 }
 
-// ------- Größe Mappings -------
-
-function mapSizeToShort(size) {
-  switch (size) {
-    case "small":
-      return "S";
-    case "medium":
-      return "M";
-    case "large":
-      return "L";
-    default:
-      return size || "";
-  }
-}
-
-// ------- Stornofrist: bis 24h vor Lieferung -------
-
-function getPlannedDeliveryDate(order) {
-  if (order.date) {
-    return new Date(order.date + "T00:00:00");
-  }
-  const created = new Date(order.createdAt || new Date());
-  const planned = new Date(created.getTime());
-  planned.setDate(planned.getDate() + 2);
-  return planned;
-}
-
-function isCancelableNow(order) {
-  const deliveryDate = getPlannedDeliveryDate(order);
-  const cutoff = new Date(deliveryDate.getTime() - 24 * 60 * 60 * 1000);
-  const now = new Date();
-  return now <= cutoff;
-}
-
-// ------- E-Mail-Templates (HTML, hell, hoher Kontrast) -------
-
+// -------------------------------------------------------
+// E-Mail HTML Template
+// -------------------------------------------------------
 function buildDeliveryLinesHTML(dateStr) {
   let firstLine;
 
@@ -354,22 +364,6 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
     outline: none;
     border-color: #b89f4a;
   }
-
-  @media (max-width: 600px) {
-    .card {
-      margin: 0 10px;
-      padding: 20px 14px 22px;
-    }
-    h1 {
-      font-size: 20px;
-    }
-    p, .data-row {
-      font-size: 15px;
-    }
-    .id-input {
-      font-size: 15px;
-    }
-  }
 </style>
 </head>
 
@@ -435,6 +429,9 @@ function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, in
 </html>`;
 }
 
+// -------------------------------------------------------
+// Plaintext fallback
+// -------------------------------------------------------
 function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true, includeCancelRule = true, noteAfterCancel = "" }) {
   const {
     name,
@@ -497,12 +494,16 @@ function buildPlainTextSummary({ title, intro, order, includePaymentInfo = true,
     .join("\n");
 }
 
-// ------- Kunden-ID Generator -------
+// -------------------------------------------------------
+// Kunden-ID Generator
+// -------------------------------------------------------
 function generateId() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
-// ------- Bestellung speichern -------
+// -------------------------------------------------------
+// Bestellung speichern (/order)
+// -------------------------------------------------------
 app.post("/order", async (req, res) => {
   try {
     const data = req.body;
@@ -510,12 +511,10 @@ app.post("/order", async (req, res) => {
 
     const { name, size, street, zip, city, email, date, specialRequests } = data;
 
-    // Pflichtfelder prüfen
     if (!name || !size || !street || !zip || !city || !email) {
       return res.status(400).json({ error: "Fehlende Pflichtfelder." });
     }
 
-    // PLZ check
     if (!allowedZips.includes(zip)) {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
@@ -529,12 +528,10 @@ app.post("/order", async (req, res) => {
       return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
     }
 
-    // E-Mail check
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
-    // Datum prüfen – nicht früher als morgen, nicht nach 24.12.2025
     if (date) {
       if (!isDateAtLeastTomorrow(date)) {
         return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
@@ -544,7 +541,6 @@ app.post("/order", async (req, res) => {
       }
     }
 
-    // Nur eine aktive Bestellung pro E-Mail-Adresse zulassen
     const existingOrder = await orders.findOne({ email });
     if (existingOrder) {
       return res.status(400).json({
@@ -571,7 +567,6 @@ app.post("/order", async (req, res) => {
 
     await orders.insertOne(order);
 
-    // Bestätigungsmail an Kundin/Kunden schicken
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
@@ -591,7 +586,6 @@ app.post("/order", async (req, res) => {
         html: buildBaseEmailHTML(emailConfig)
       });
 
-      // Optional: Kopie an Admin
       if (process.env.ADMIN_EMAIL) {
         await sgMail.send({
           to: process.env.ADMIN_EMAIL,
@@ -618,7 +612,9 @@ app.post("/order", async (req, res) => {
   }
 });
 
-// ------- Bestellung abrufen -------
+// -------------------------------------------------------
+// Bestellung abrufen (/lookup)
+// -------------------------------------------------------
 app.post("/lookup", async (req, res) => {
   try {
     const { email, customerId } = req.body;
@@ -636,22 +632,21 @@ app.post("/lookup", async (req, res) => {
   }
 });
 
-// ------- Bestellung aktualisieren -------
+// -------------------------------------------------------
+// Bestellung aktualisieren (/update)
+// -------------------------------------------------------
 app.post("/update", async (req, res) => {
   try {
     const { email, customerId, size, street, zip, city, date, name, specialRequests } = req.body;
 
-    // Pflichtfelder prüfen
     if (!email || !customerId || !size || !street || !zip || !city) {
       return res.status(400).json({ error: "Fehlende Pflichtfelder." });
     }
 
-    // E-Mail Format
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: "Ungültige E-Mail-Adresse." });
     }
 
-    // PLZ im Liefergebiet
     if (!allowedZips.includes(zip)) {
       return res.status(400).json({ error: "PLZ außerhalb des Liefergebiets." });
     }
@@ -665,7 +660,6 @@ app.post("/update", async (req, res) => {
       return res.status(400).json({ error: "Ort passt nicht zur angegebenen PLZ." });
     }
 
-    // Datum prüfen – nicht früher als morgen, nicht nach 24.12.2025
     if (date) {
       if (!isDateAtLeastTomorrow(date)) {
         return res.status(400).json({ error: "Das Lieferdatum darf nicht früher als morgen liegen." });
@@ -690,29 +684,23 @@ app.post("/update", async (req, res) => {
       updateFields.name = name.trim();
     }
 
-    // 1) Update ausführen
+    // Update durchführen
     const updateResult = await orders.updateOne(
       { email, customerId },
-      {
-        $set: updateFields
-      }
+      { $set: updateFields }
     );
 
-    console.log("Update-Result:", updateResult);
-
-    if (!updateResult.matchedCount || updateResult.matchedCount === 0) {
+    if (!updateResult.matchedCount) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    // 2) Aktualisierte Bestellung erneut laden
     const updatedOrder = await orders.findOne({ email, customerId });
-    console.log("Updated order from DB:", updatedOrder);
 
     if (!updatedOrder) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    // 3) Bestätigungsmail für Update
+    // E-Mail nach Update
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
@@ -757,12 +745,29 @@ app.post("/update", async (req, res) => {
   }
 });
 
-// ------- Bestellung stornieren -------
+// -------------------------------------------------------
+// Bestellung stornieren (/delete)
+// -------------------------------------------------------
+function getPlannedDeliveryDate(order) {
+  if (order.date) {
+    return new Date(order.date + "T00:00:00");
+  }
+  const created = new Date(order.createdAt || new Date());
+  const planned = new Date(created.getTime());
+  planned.setDate(planned.getDate() + 2);
+  return planned;
+}
+
+function isCancelableNow(order) {
+  const deliveryDate = getPlannedDeliveryDate(order);
+  const cutoff = new Date(deliveryDate.getTime() - 24 * 60 * 60 * 1000);
+  const now = new Date();
+  return now <= cutoff;
+}
+
 app.post("/delete", async (req, res) => {
   try {
     const { email, customerId } = req.body;
-    
-    console.log("Delete-Request:", { email, customerId });
 
     if (!email || !customerId) {
       return res.status(400).json({ error: "Fehlende Pflichtfelder." });
@@ -773,26 +778,22 @@ app.post("/delete", async (req, res) => {
     }
 
     const existing = await orders.findOne({ email, customerId });
-    console.log("Existing order for delete:", existing);
 
     if (!existing) {
-      console.log("Keine Bestellung gefunden für:", { email, customerId });
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    // Stornofrist prüfen: bis 24 Stunden vor Liefertermin
     if (!isCancelableNow(existing)) {
       return res.status(400).json({ error: "Eine Stornierung ist nur bis 24 Stunden vor dem Liefertermin möglich." });
     }
 
     const deleteResult = await orders.deleteOne({ email, customerId });
-    console.log("Delete result:", deleteResult);
 
     if (deleteResult.deletedCount === 0) {
       return res.status(404).json({ error: "Keine Bestellung gefunden." });
     }
 
-    // Storno-Mail
+    // Bestätigungsmail beim Storno
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
@@ -837,28 +838,22 @@ app.post("/delete", async (req, res) => {
   }
 });
 
-// ------- Health-Check -------
-app.get("/", (req, res) => {
-  res.send("TreeDelivery Backend läuft ✅");
-});
-
-// ------- Start Server -------
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log("Server läuft auf Port", port);
-});
-
-// ---------- ADMIN BACKEND ---------- 
+// -------------------------------------------------------
+// ADMIN BACKEND (JWT Login, protected Routes)
+// -------------------------------------------------------
 
 import jwt from "jsonwebtoken";
 
+// Admin Credentials aus .env
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS = process.env.ADMIN_PASS;
 const SECRET = process.env.ADMIN_SECRET;
 
+// Middleware: prüft ob Admin eingeloggt ist
 function adminAuth(req, res, next) {
   const header = req.headers.authorization;
-  if (!header) return res.status(403).send("Kein Token");
+  if (!header) return res.status(403).send("Kein Token übergeben");
+
   try {
     const token = header.split(" ")[1];
     jwt.verify(token, SECRET);
@@ -868,11 +863,61 @@ function adminAuth(req, res, next) {
   }
 }
 
+// -------------------------------------------------------
+// Admin Login Route
+// -------------------------------------------------------
 app.post("/api/admin/login", (req, res) => {
-  const {username, password} = req.body;
+  const { username, password } = req.body;
+
   if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = jwt.sign({admin: true}, SECRET);
-    return res.send({success: true, token});
+    const token = jwt.sign({ admin: true }, SECRET, { expiresIn: "12h" });
+    return res.send({ success: true, token });
   }
-  return res.send({success: false});
+
+  return res.send({ success: false });
+});
+
+// -------------------------------------------------------
+// Admin: Alle Bestellungen abrufen
+// -------------------------------------------------------
+app.get("/api/admin/orders", adminAuth, async (req, res) => {
+  try {
+    const all = await orders.find().toArray();
+    res.json(all);
+  } catch (err) {
+    console.error("Admin /orders Fehler:", err);
+    res.status(500).json({ error: "Konnte Bestellungen nicht laden." });
+  }
+});
+
+// -------------------------------------------------------
+// Admin-Frontend (HTML-Dateien schützen)
+// -------------------------------------------------------
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Statische Dateien in /admin nur nach Login ausliefern
+app.use("/admin", adminAuth, express.static(path.join(__dirname, "admin")));
+
+// Beispiel:
+// /admin/index.html -> geschützt durch adminAuth
+// /admin/dashboard.html -> geschützt
+// /admin/... -> geschützt
+
+// -------------------------------------------------------
+// Health Check
+// -------------------------------------------------------
+app.get("/", (req, res) => {
+  res.send("TreeDelivery Backend läuft ✅");
+});
+
+// -------------------------------------------------------
+// Server Start
+// -------------------------------------------------------
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log("Server läuft auf Port", port);
 });
