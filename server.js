@@ -34,7 +34,7 @@ if (!process.env.SENDGRID_KEY) {
 }
 
 //---------------------------------------------------------
-//TELEGRAM BOT
+// TELEGRAM BOT
 //---------------------------------------------------------
 async function notifyTelegram(text) {
   const token = process.env.TELEGRAM_TOKEN;
@@ -50,10 +50,12 @@ async function notifyTelegram(text) {
   try {
     await axios.post(url, {
       chat_id: chatId,
-      text
+      text: text
     });
+
+    console.log("Telegram gesendet:", text);
   } catch (err) {
-    console.error("Telegram Fehler:", err.response?.data || err);
+    console.error("Telegram-Fehler:", err.response?.data || err);
   }
 }
 
@@ -676,7 +678,7 @@ app.post("/order", async (req, res) => {
     };
 
     await orders.insertOne(order);
-    notifyTelegram(`Neue Bestellung! Kunde: ${name}, Größe: ${size}, PLZ: ${zip}`);
+    await notifyTelegram(`Neue Bestellung! Kunde: ${name}, Größe: ${size}, PLZ: ${zip}`);
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
