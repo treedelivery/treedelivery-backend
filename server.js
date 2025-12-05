@@ -67,27 +67,6 @@ function adminAuth(req, res, next) {
 }
 
 // -------------------------------------------------------
-// Admin Login API (liefert JWT Token)
-// -------------------------------------------------------
-app.post("/api/admin/login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = jwt.sign({ admin: true }, SECRET, { expiresIn: "12h" });
-    return res.json({ success: true, token });
-  }
-
-  res.json({ success: false });
-});
-
-app.use("/api/admin", adminAuth); // alles unter /api/admin (außer login) geschützt
-
-app.get("/api/admin/orders", async (req, res) => {
-  const all = await orders.find().sort({ createdAt: -1 }).toArray();
-  res.json(all);
-});
-
-// -------------------------------------------------------
 // Preise, PLZ, City Mapping, Utilities
 // -------------------------------------------------------
 const allowedZips = [
@@ -131,6 +110,100 @@ const PRICES = {
   large: 99,
   xl: 129
 };
+
+// -------------------------------------------------------
+// Admin Login API (liefert JWT Token)
+// -------------------------------------------------------
+app.post("/api/admin/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const token = jwt.sign({ admin: true }, SECRET, { expiresIn: "12h" });
+    return res.json({ success: true, token });
+  }
+
+  res.json({ success: false });
+});
+
+// -------------------------------------------------------
+// AB HIER: ALLE /api/admin Routen geschützt
+// -------------------------------------------------------
+app.use("/api/admin", adminAuth);
+
+// --- Admin: Bestellungen abrufen ---
+app.get("/api/admin/orders", async (req, res) => {
+  const all = await orders.find().sort({ createdAt: -1 }).toArray();
+  res.json(all);
+});
+
+// --- Admin Preise abrufen ---
+app.get("/api/admin/prices", async (req, res) => {
+  res.json(PRICES);
+});
+
+// --- Admin Preise ändern ---
+app.post("/api/admin/prices", async (req, res) => {
+  const { small, medium, large, xl } = req.body;
+  if (small == null || medium == null || large == null || xl == null) {
+    return res.status(400).json({ error: "Alle Preise müssen angegeben werden." });
+  }
+  PRICES.small = Number(small);
+  PRICES.medium = Number(medium);
+  PRICES.large = Number(large);
+  PRICES.xl = Number(xl);
+  res.json({ success: true, prices: PRICES });
+});
+
+// --- Admin Bestellung Status ändern ---
+app.post("/api/admin/status", async (req, res) => {
+  const { customerId, status } = req.body;
+  if (!customerId || !status) {
+    return res.status(400).json({ error: "customerId und status erforderlich." });
+  }
+  const result = await orders.updateOne({ customerId }, { $set: { status }});
+  if (!result.matchedCount) return res.status(404).json({ error: "Bestellung nicht gefunden." });
+  res.json({ success: true });
+});
+
+// --- Admin: Lieferungen nach Datum ---
+app.get("/api/admin/deliveries/:date", async (req, res) => {
+  const date = req.params.date;
+  const list = await orders.find({ date }).toArray();
+  res.json(list);
+});
+
+// --- Admin: Lieferzeit-E-Mail senden ---
+app.post("/api/admin/delivery-mail", async (req, res) => {
+  const { customerId, fromTime, toTime } = req.body;
+  if (!customerId || !fromTime || !toTime) {
+    return res.status(400).json({ error: "customerId, fromTime, toTime erforderlich." });
+  }
+
+  const order = await orders.findOne({ customerId });
+  if (!order) return res.status(404).json({ error: "Bestellung nicht gefunden." });
+
+  const html = `
+    <p>Guten Tag ${order.name},</p>
+    <p>Ihre Lieferung erfolgt heute zwischen <strong>${fromTime}</strong> und <strong>${toTime}</strong>.</p>
+    <p>Mit freundlichen Grüßen<br>Ihr TreeDelivery-Team 🎄</p>
+  `;
+
+  try {
+    await sgMail.send({
+      to: order.email,
+      from: process.env.EMAIL_FROM,
+      subject: "Ihre Weihnachtsbaum-Lieferung – Zeitfenster",
+      html,
+      text: `Ihre Lieferung erfolgt heute zwischen ${fromTime} und ${toTime}.`
+    });
+  } catch (err) {
+    return res.status(500).json({ error: "E-Mail konnte nicht gesendet werden." });
+  }
+
+  await orders.updateOne({ customerId }, { $set: { status: "Lieferung heute geplant" }});
+  res.json({ success: true });
+});
+
 
 app.get("/prices", (req, res) => {
   res.json(PRICES);
