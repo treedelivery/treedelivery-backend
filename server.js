@@ -836,7 +836,7 @@ app.listen(port, () => {
 
 // ---------- ADMIN BACKEND ---------- 
 
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS = process.env.ADMIN_PASS;
