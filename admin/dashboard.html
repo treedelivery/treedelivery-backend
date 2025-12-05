@@ -5,6 +5,15 @@
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="admin.css">
 </head>
+  <script>
+  if (!localStorage.getItem("token")) {
+    window.location.href = "/admin/login.html";
+  }
+</script><script>
+  if (!localStorage.getItem("token")) {
+    window.location.href = "/admin/login.html";
+  }
+</script>
 <body>
   <h1>TreeDelivery Admin</h1>
 
