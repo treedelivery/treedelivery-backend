@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <h1>TreeDelivery Admin</h1>
+
+  <section>
+    <h2>Preise ändern</h2>
+    <input id="priceS" placeholder="Preis S">
+    <input id="priceM" placeholder="Preis M">
+    <input id="priceL" placeholder="Preis L">
+    <button onclick="updatePrices()">Speichern</button>
+  </section>
+
+  <section>
+    <h2>Bestellungen</h2>
+    <div id="orderList"></div>
+  </section>
+
+  <script src="admin.js"></script>
+</body>
+</html>
