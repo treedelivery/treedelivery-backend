@@ -13,6 +13,7 @@ dotenv.config();
 // Express Setup
 // -------------------------------------------------------
 const app = express();
+
 app.use(express.json());
 app.use(cors());
 
@@ -839,67 +840,9 @@ app.post("/delete", async (req, res) => {
 });
 
 // -------------------------------------------------------
-// ADMIN BACKEND (JWT Login, protected Routes)
-// -------------------------------------------------------
-
-import jwt from "jsonwebtoken";
-
-// Admin Credentials aus .env
-const ADMIN_USER = process.env.ADMIN_USER;
-const ADMIN_PASS = process.env.ADMIN_PASS;
-const SECRET = process.env.ADMIN_SECRET;
-
-// Middleware: prüft ob Admin eingeloggt ist
-function adminAuth(req, res, next) {
-  const header = req.headers.authorization;
-  if (!header) return res.status(403).send("Kein Token übergeben");
-
-  try {
-    const token = header.split(" ")[1];
-    jwt.verify(token, SECRET);
-    next();
-  } catch {
-    return res.status(403).send("Token ungültig");
-  }
-}
-
-// -------------------------------------------------------
-// Admin Login Route
-// -------------------------------------------------------
-app.post("/api/admin/login", (req, res) => {
-  const { username, password } = req.body;
-
-  if (username === ADMIN_USER && password === ADMIN_PASS) {
-    const token = jwt.sign({ admin: true }, SECRET, { expiresIn: "12h" });
-    return res.send({ success: true, token });
-  }
-
-  return res.send({ success: false });
-});
-
-// -------------------------------------------------------
-// Admin: Alle Bestellungen abrufen
-// -------------------------------------------------------
-app.get("/api/admin/orders", adminAuth, async (req, res) => {
-  try {
-    const all = await orders.find().toArray();
-    res.json(all);
-  } catch (err) {
-    console.error("Admin /orders Fehler:", err);
-    res.status(500).json({ error: "Konnte Bestellungen nicht laden." });
-  }
-});
-
-// -------------------------------------------------------
 // Admin-Frontend (HTML-Dateien schützen)
 // -------------------------------------------------------
-import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Statische Dateien in /admin nur nach Login ausliefern
 app.use("/admin", adminAuth, express.static(path.join(__dirname, "admin")));
 
 // Beispiel:
