@@ -173,6 +173,12 @@
       margin-top: 1rem;
       font-size: 0.98rem;
     }
+	  
+	  #date-wrapper input[type="date"],
+#edit-date-wrapper input[type="date"] {
+  width: 100%;
+  max-width: 100%;
+}
 
     input, select, textarea {
       width: var(--input-width);
@@ -814,6 +820,17 @@ async function loadPrices() {
   });
 }
 
+	
+function setupModal() {
+  const btn = document.getElementById("modal-close-btn");
+  const backdrop = document.getElementById("order-modal-backdrop");
+
+  btn.addEventListener("click", () => {
+    backdrop.classList.remove("visible");
+  });
+}
+
+	
 loadPrices();
 
 // ------- ZIPS & ORTE -------
@@ -872,6 +889,7 @@ function getTomorrowDateStr() {
 const MAX_DELIVERY_DATE = "2025-12-24";
 
 document.addEventListener("DOMContentLoaded", () => {
+	setupModal();
   const buttons = document.querySelectorAll('.nav-tabs button');
   const tabs = {
     "bestellen": document.getElementById("tab-bestellen"),
@@ -1277,11 +1295,14 @@ function openOrderModal(customerId, email, date, updated = false) {
 
   if (updated) {
     titleEl.textContent = "Änderung gespeichert";
-    mainText.textContent = "Ihre Bestellung wurde erfolgreich aktualisiert.";
+    mainText.innerHTML =
+      "Ihre Bestellung wurde erfolgreich aktualisiert.<br>" +
+      "Bitte prüfen Sie auch Ihren <strong>Spam-Ordner</strong>.";
   } else {
     titleEl.textContent = "Vielen Dank für Ihre Bestellung!";
-    if (date) mainText.textContent = `Ihr Baum wird am ${date} geliefert.`;
-    else mainText.textContent = "Ihr Baum wird in etwa zwei Tagen geliefert.";
+    mainText.innerHTML =
+      "Wir haben Ihre Bestellung erfolgreich erhalten.<br>" +
+      "Bitte prüfen Sie auch Ihren <strong>Spam-Ordner</strong> für die Bestätigungs-E-Mail.";
   }
 
   backdrop.classList.add("visible");
