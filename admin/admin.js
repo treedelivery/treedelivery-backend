@@ -1,29 +1,27 @@
 const API = "/api/admin";
 
 // LOGIN
-const loginForm = document.getElementById("loginForm");
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
 
-    const res = await fetch(API + "/login", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({username, password})
-    });
-
-    const data = await res.json();
-    if (data.success) {
-      localStorage.setItem("token", data.token);
-      window.location.href = "/admin/dashboard.html";
-    } else {
-      document.getElementById("error").innerText = "Login fehlgeschlagen.";
-    }
+  const res = await fetch("/api/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
   });
-}
+
+  const data = await res.json();
+
+  if (data.success) {
+    localStorage.setItem("token", data.token);
+    window.location.href = "/admin/dashboard.html";
+  } else {
+    alert("Login fehlgeschlagen!");
+  }
+});
 
 // AUTH HEADER
 function auth() {
