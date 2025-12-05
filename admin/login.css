@@ -1,0 +1,98 @@
+/* Allgemein */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: linear-gradient(135deg, #1e5631, #a4de02);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Zentrierung */
+.login-wrapper {
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+}
+
+/* Karte */
+.login-card {
+  background: white;
+  border-radius: 14px;
+  padding: 30px 24px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  text-align: center;
+}
+
+/* Logo */
+.logo {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+/* Titel */
+h2 {
+  margin: 6px 0;
+  color: #1e5631;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #4a4a4a;
+  margin-bottom: 20px;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+}
+
+input:focus {
+  border-color: #1e5631;
+  box-shadow: 0 0 6px rgba(30, 86, 49, 0.25);
+}
+
+/* Button */
+button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  font-size: 16px;
+  background: #1e5631;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #174728;
+}
+
+/* Fehlertext */
+.error {
+  margin-top: 12px;
+  color: #d40000;
+  font-size: 14px;
+  min-height: 18px;
+}
+
+/* Mobile Optimierung */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 26px 18px;
+  }
+
+  button {
+    font-size: 15px;
+  }
+}
