@@ -80,6 +80,13 @@ app.post("/api/admin/login", (req, res) => {
   res.json({ success: false });
 });
 
+app.use("/api/admin", adminAuth); // alles unter /api/admin (außer login) geschützt
+
+app.get("/api/admin/orders", async (req, res) => {
+  const all = await orders.find().sort({ createdAt: -1 }).toArray();
+  res.json(all);
+});
+
 // -------------------------------------------------------
 // Preise, PLZ, City Mapping, Utilities
 // -------------------------------------------------------
@@ -832,14 +839,10 @@ app.get("/admin/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 
-
-// --- Admin Login & Assets öffentlich ---
-app.use("/admin/admin.js", express.static(path.join(__dirname, "admin/admin.js")));
-app.use("/admin/admin.css", express.static(path.join(__dirname, "admin/admin.css")));
 // -------------------------------------------------------
-// Admin: alle anderen Dateien geschützt
+// Admin: statische Dateien (ALLE öffentlich ausliefern)
 // -------------------------------------------------------
-app.use("/admin", adminAuth, express.static(path.join(__dirname, "admin")));
+app.use("/admin", express.static(path.join(__dirname, "admin")));
 
 // -------------------------------------------------------
 // Health Check
