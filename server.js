@@ -833,3 +833,32 @@ const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log("Server läuft auf Port", port);
 });
+
+// ---------- ADMIN BACKEND ---------- 
+
+const jwt = require("jsonwebtoken");
+
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const SECRET = process.env.ADMIN_SECRET;
+
+function adminAuth(req, res, next) {
+  const header = req.headers.authorization;
+  if (!header) return res.status(403).send("Kein Token");
+  try {
+    const token = header.split(" ")[1];
+    jwt.verify(token, SECRET);
+    next();
+  } catch {
+    return res.status(403).send("Token ungültig");
+  }
+}
+
+app.post("/api/admin/login", (req, res) => {
+  const {username, password} = req.body;
+  if (username === ADMIN_USER && password === ADMIN_PASS) {
+    const token = jwt.sign({admin: true}, SECRET);
+    return res.send({success: true, token});
+  }
+  return res.send({success: false});
+});
