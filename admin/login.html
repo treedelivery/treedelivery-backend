@@ -3,18 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <title>Admin Login – TreeDelivery</title>
-  <link rel="stylesheet" href="admin.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="login.css" />
 </head>
 <body>
-  <div style="margin: 80px auto; width: 300px;">
-    <h2>Admin Login</h2>
-    <form id="loginForm">
-      <input id="username" placeholder="Benutzername" required>
-      <input id="password" type="password" placeholder="Passwort" required>
-      <button>Login</button>
-    </form>
-    <p id="error"></p>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <div class="logo">🎄</div>
+      <h2>TreeDelivery Admin</h2>
+      <p class="subtitle">Bitte melden Sie sich an</p>
+
+      <form id="loginForm">
+        <input id="username" placeholder="Benutzername" required>
+        <input id="password" type="password" placeholder="Passwort" required>
+
+        <button>Login</button>
+
+        <p id="error" class="error"></p>
+      </form>
+
+    </div>
   </div>
+
   <script src="login.js"></script>
 </body>
 </html>
