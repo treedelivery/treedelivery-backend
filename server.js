@@ -189,6 +189,23 @@ function buildDeliveryLinesHTML(dateStr) {
   `;
 }
 
+
+function mapSizeToShort(size) {
+  switch (size) {
+    case "small":
+      return "S";
+    case "medium":
+      return "M";
+    case "large":
+      return "L";
+    case "xl":
+      return "XL";
+    default:
+      return size || "";
+  }
+}
+
+
 function buildBaseEmailHTML({ title, intro, order, includePaymentInfo = true, includeCancelRule = true, noteAfterCancel = "" }) {
   const {
     name,
