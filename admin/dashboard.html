@@ -4,94 +4,107 @@
   <meta charset="UTF-8" />
   <title>TreeDelivery – Admin Dashboard</title>
   <link rel="stylesheet" href="admin.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
-  <div id="dashboard" style="max-width: 1100px; margin: 40px auto; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
-    <h1>TreeDelivery – Admin Dashboard</h1>
-    <button id="logoutBtn" style="margin-bottom: 20px;">Logout</button>
+  <header class="topbar">
+    <h1>🎄 TreeDelivery – Admin</h1>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </header>
+
+  <main class="container">
 
     <!-- PREISE -->
-    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <section class="card">
       <h2>Baumpreise</h2>
-      <form id="priceForm">
-        <div>
-          <label>S (small): <input type="number" id="price-small" required /></label>
-        </div>
-        <div>
-          <label>M (medium): <input type="number" id="price-medium" required /></label>
-        </div>
-        <div>
-          <label>L (large): <input type="number" id="price-large" required /></label>
-        </div>
-        <div>
-          <label>XL (xl): <input type="number" id="price-xl" required /></label>
-        </div>
-        <button type="submit">Preise speichern</button>
+      <form id="priceForm" class="grid-2">
+        <label>S (small)
+          <input type="number" id="price-small" required />
+        </label>
+
+        <label>M (medium)
+          <input type="number" id="price-medium" required />
+        </label>
+
+        <label>L (large)
+          <input type="number" id="price-large" required />
+        </label>
+
+        <label>XL (xl)
+          <input type="number" id="price-xl" required />
+        </label>
+
+        <button class="btn primary full">Preise speichern</button>
       </form>
-      <p id="priceMessage"></p>
+      <p id="priceMessage" class="msg"></p>
     </section>
 
-    <!-- LIEFERDATUM-FILTER -->
-    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <!-- FILTER -->
+    <section class="card">
       <h2>Lieferungen nach Datum</h2>
-      <div>
-        <label>Lieferdatum:
+
+      <div class="grid-2">
+        <label>Lieferdatum
           <input type="date" id="filter-date" />
         </label>
-        <button id="filterDateBtn">Nur dieses Datum anzeigen</button>
-        <button id="showAllBtn">Alle Bestellungen anzeigen</button>
+
+        <div class="grid-2">
+          <button id="filterDateBtn" class="btn secondary">Filtern</button>
+          <button id="showAllBtn" class="btn">Alle anzeigen</button>
+        </div>
       </div>
     </section>
 
     <!-- BESTELLUNGEN -->
-    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <section class="card">
       <h2>Bestellungen</h2>
-      <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-        <thead>
-          <tr>
-            <th>Kunden-ID</th>
-            <th>Name</th>
-            <th>E-Mail</th>
-            <th>Größe</th>
-            <th>Lieferdatum</th>
-            <th>Status</th>
-            <th>Adresse</th>
-            <th>Wünsche</th>
-            <th>Aktion</th>
-          </tr>
-        </thead>
-        <tbody id="ordersBody">
-          <!-- wird per JS gefüllt -->
-        </tbody>
-      </table>
-      <p id="ordersMessage"></p>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>E-Mail</th>
+              <th>Größe</th>
+              <th>Datum</th>
+              <th>Status</th>
+              <th>Adresse</th>
+              <th>Wünsche</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+
+      <p id="ordersMessage" class="msg"></p>
     </section>
 
-    <!-- LIEFERZEIT-E-MAIL -->
-    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+    <!-- LIEFERZEIT MAIL -->
+    <section class="card">
       <h2>Lieferzeit-E-Mail senden</h2>
-      <form id="deliveryMailForm">
-        <div>
-          <label>Kunden-ID:
-            <input type="text" id="deliveryCustomerId" required />
-          </label>
-        </div>
-        <div>
-          <label>Von (z.B. 10:00):
-            <input type="time" id="deliveryFrom" required />
-          </label>
-        </div>
-        <div>
-          <label>Bis (z.B. 12:00):
-            <input type="time" id="deliveryTo" required />
-          </label>
-        </div>
-        <button type="submit">E-Mail senden & Status setzen</button>
+      <form id="deliveryMailForm" class="grid-2">
+        <label>Kunden-ID
+          <input type="text" id="deliveryCustomerId" required />
+        </label>
+
+        <label>Von
+          <input type="time" id="deliveryFrom" required />
+        </label>
+
+        <label>Bis
+          <input type="time" id="deliveryTo" required />
+        </label>
+
+        <button class="btn primary full">E-Mail senden</button>
       </form>
-      <p id="deliveryMessage"></p>
+
+      <p id="deliveryMessage" class="msg"></p>
     </section>
 
-  </div>
+  </main>
 
   <script src="admin.js"></script>
 </body>
