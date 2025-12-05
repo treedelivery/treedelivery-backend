@@ -67,19 +67,6 @@ function adminAuth(req, res, next) {
 }
 
 // -------------------------------------------------------
-// Geschützte Admin-Dateien (dashboard.html, admin.js …)
-// -------------------------------------------------------
-app.get("/admin/:file", adminAuth, (req, res) => {
-  const pathToFile = path.join(__dirname, "admin", req.params.file);
-  res.sendFile(pathToFile);
-});
-
-// Login-Datei explizit öffentlich
-app.get("/admin/login.html", (req, res) => {
-  res.sendFile(path.join(__dirname, "admin", "login.html"));
-});
-
-// -------------------------------------------------------
 // Admin Login API (liefert JWT Token)
 // -------------------------------------------------------
 app.post("/api/admin/login", (req, res) => {
@@ -838,17 +825,17 @@ app.post("/delete", async (req, res) => {
     res.status(500).json({ error: "Serverfehler bei der Stornierung." });
   }
 });
+// -------------------------------------------------------
+// Admin: Login-Seite öffentlich
+// -------------------------------------------------------
+app.get("/admin/login.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "admin", "login.html"));
+});
 
 // -------------------------------------------------------
-// Admin-Frontend (HTML-Dateien schützen)
+// Admin: alle anderen Dateien geschützt
 // -------------------------------------------------------
-
 app.use("/admin", adminAuth, express.static(path.join(__dirname, "admin")));
-
-// Beispiel:
-// /admin/index.html -> geschützt durch adminAuth
-// /admin/dashboard.html -> geschützt
-// /admin/... -> geschützt
 
 // -------------------------------------------------------
 // Health Check
