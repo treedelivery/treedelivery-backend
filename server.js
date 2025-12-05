@@ -37,6 +37,7 @@ if (!process.env.SENDGRID_KEY) {
 // TELEGRAM BOT
 //---------------------------------------------------------
 async function notifyTelegram(text) {
+  console.log("notifyTelegram wurde aufgerufen mit:", text);
   const token = process.env.TELEGRAM_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
