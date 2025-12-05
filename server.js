@@ -33,6 +33,30 @@ if (!process.env.SENDGRID_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_KEY);
 }
 
+//---------------------------------------------------------
+//TELEGRAM BOT
+//---------------------------------------------------------
+async function notifyTelegram(text) {
+  const token = process.env.TELEGRAM_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token || !chatId) {
+    console.log("Telegram ist nicht eingerichtet");
+    return;
+  }
+
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+  try {
+    await axios.post(url, {
+      chat_id: chatId,
+      text
+    });
+  } catch (err) {
+    console.error("Telegram Fehler:", err.response?.data || err);
+  }
+}
+
 // -------------------------------------------------------
 // MongoDB Connection
 // -------------------------------------------------------
@@ -652,7 +676,7 @@ app.post("/order", async (req, res) => {
     };
 
     await orders.insertOne(order);
-
+    notifyTelegram(`Neue Bestellung! Kunde: ${name}, Größe: ${size}, PLZ: ${zip}`);
     try {
       const fromAddress = process.env.EMAIL_FROM || "bestellung@treedelivery.de";
 
