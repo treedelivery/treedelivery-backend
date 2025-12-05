@@ -13,11 +13,19 @@ if (!process.env.SENDGRID_KEY) {
   sgMail.setApiKey(process.env.SENDGRID_KEY);
 }
 
+
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 // Geschützte Admin-Dateien
 app.get("/admin/:file", adminAuth, (req, res) => {
   const file = req.params.file;
-  res.sendFile(process.cwd() + "/admin/" + file);
+  res.sendFile(path.join(__dirname, "admin", file));
 });
+
 
 const app = express();
 app.use(express.json());
