@@ -832,6 +832,10 @@ app.get("/admin/login.html", (req, res) => {
   res.sendFile(path.join(__dirname, "admin", "login.html"));
 });
 
+
+// --- Admin Login & Assets öffentlich ---
+app.use("/admin/admin.js", express.static(path.join(__dirname, "admin/admin.js")));
+app.use("/admin/admin.css", express.static(path.join(__dirname, "admin/admin.css")));
 // -------------------------------------------------------
 // Admin: alle anderen Dateien geschützt
 // -------------------------------------------------------
