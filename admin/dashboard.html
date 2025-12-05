@@ -1,34 +1,97 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="admin.css">
+  <meta charset="UTF-8" />
+  <title>TreeDelivery – Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css" />
 </head>
-  <script>
-  if (!localStorage.getItem("token")) {
-    window.location.href = "/admin/login.html";
-  }
-</script><script>
-  if (!localStorage.getItem("token")) {
-    window.location.href = "/admin/login.html";
-  }
-</script>
 <body>
-  <h1>TreeDelivery Admin</h1>
+  <div id="dashboard" style="max-width: 1100px; margin: 40px auto; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+    <h1>TreeDelivery – Admin Dashboard</h1>
+    <button id="logoutBtn" style="margin-bottom: 20px;">Logout</button>
 
-  <section>
-    <h2>Preise ändern</h2>
-    <input id="priceS" placeholder="Preis S">
-    <input id="priceM" placeholder="Preis M">
-    <input id="priceL" placeholder="Preis L">
-    <button onclick="updatePrices()">Speichern</button>
-  </section>
+    <!-- PREISE -->
+    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2>Baumpreise</h2>
+      <form id="priceForm">
+        <div>
+          <label>S (small): <input type="number" id="price-small" required /></label>
+        </div>
+        <div>
+          <label>M (medium): <input type="number" id="price-medium" required /></label>
+        </div>
+        <div>
+          <label>L (large): <input type="number" id="price-large" required /></label>
+        </div>
+        <div>
+          <label>XL (xl): <input type="number" id="price-xl" required /></label>
+        </div>
+        <button type="submit">Preise speichern</button>
+      </form>
+      <p id="priceMessage"></p>
+    </section>
 
-  <section>
-    <h2>Bestellungen</h2>
-    <div id="orderList"></div>
-  </section>
+    <!-- LIEFERDATUM-FILTER -->
+    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2>Lieferungen nach Datum</h2>
+      <div>
+        <label>Lieferdatum:
+          <input type="date" id="filter-date" />
+        </label>
+        <button id="filterDateBtn">Nur dieses Datum anzeigen</button>
+        <button id="showAllBtn">Alle Bestellungen anzeigen</button>
+      </div>
+    </section>
+
+    <!-- BESTELLUNGEN -->
+    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2>Bestellungen</h2>
+      <table border="1" cellpadding="6" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Kunden-ID</th>
+            <th>Name</th>
+            <th>E-Mail</th>
+            <th>Größe</th>
+            <th>Lieferdatum</th>
+            <th>Status</th>
+            <th>Adresse</th>
+            <th>Wünsche</th>
+            <th>Aktion</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody">
+          <!-- wird per JS gefüllt -->
+        </tbody>
+      </table>
+      <p id="ordersMessage"></p>
+    </section>
+
+    <!-- LIEFERZEIT-E-MAIL -->
+    <section style="margin-bottom: 30px; padding: 15px; border: 1px solid #ddd; border-radius: 8px;">
+      <h2>Lieferzeit-E-Mail senden</h2>
+      <form id="deliveryMailForm">
+        <div>
+          <label>Kunden-ID:
+            <input type="text" id="deliveryCustomerId" required />
+          </label>
+        </div>
+        <div>
+          <label>Von (z.B. 10:00):
+            <input type="time" id="deliveryFrom" required />
+          </label>
+        </div>
+        <div>
+          <label>Bis (z.B. 12:00):
+            <input type="time" id="deliveryTo" required />
+          </label>
+        </div>
+        <button type="submit">E-Mail senden & Status setzen</button>
+      </form>
+      <p id="deliveryMessage"></p>
+    </section>
+
+  </div>
 
   <script src="admin.js"></script>
 </body>
