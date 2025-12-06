@@ -593,6 +593,29 @@
   </style>
 </head>
 
+	<script>
+function sendTrackEvent() {
+    fetch("/track", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            path: window.location.pathname,
+            sessionId: localStorage.getItem("sessionId") 
+                || (() => {
+                    const id = crypto.randomUUID();
+                    localStorage.setItem("sessionId", id);
+                    return id;
+                })()
+        })
+    });
+}
+
+sendTrackEvent();
+</script>
+
+
 <body>
 
 <canvas id="snow-canvas"></canvas>
