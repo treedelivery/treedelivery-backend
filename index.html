@@ -593,9 +593,9 @@
   </style>
 </head>
 
-	<script>
+<script>
 function sendTrackEvent() {
-    fetch("/track", {
+    fetch("https://treedelivery-backend.onrender.com/track", {   // <--- HIER: komplette Backend-URL eintragen
         method: "POST",
         headers: {
             "Content-Type": "application/json"
