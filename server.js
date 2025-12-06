@@ -7,6 +7,8 @@ import sgMail from "@sendgrid/mail";
 import jwt from "jsonwebtoken";
 import path from "path";
 import { fileURLToPath } from "url";
+import geoip from "geoip-lite";
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 
@@ -724,6 +726,42 @@ app.post("/order", async (req, res) => {
     res.status(500).json({ error: "Serverfehler bei der Bestellung." });
   }
 });
+
+// -------------------------------------------------------
+// GEO TRACKING
+// -------------------------------------------------------
+app.post("/track", async (req, res) => {
+  try {
+    const ip =
+      req.headers["cf-connecting-ip"] ||
+      req.ip.replace("::ffff:", "");
+
+    const ua = req.headers["user-agent"] || "";
+    const ref = req.headers["referer"] || null;
+
+    const geo = geoip.lookup(ip) || {};
+
+    const entry = {
+      timestamp: new Date(),
+      ip,
+      country: geo.country || null,
+      city: geo.city || null,
+      path: req.body.path,
+      userAgent: ua,
+      referrer: ref,
+      sessionId: req.body.sessionId || uuidv4()
+    };
+
+    await db.collection("analytics").insertOne(entry);
+
+    res.status(200).end();
+  } catch (err) {
+    console.error("TRACK ERROR:", err);
+    res.status(500).end();
+  }
+});
+
+
 
 // -------------------------------------------------------
 // Bestellung abrufen (/lookup)
