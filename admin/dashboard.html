@@ -15,6 +15,12 @@
 
   <main class="container">
 
+<!-- TRACKING-->
+    <div id="liveVisitors" style="font-size: 24px; font-weight: bold;">
+  Live Besucher: …
+</div>
+
+    
     <!-- PREISE -->
     <section class="card">
       <h2>Baumpreise</h2>
@@ -107,5 +113,20 @@
   </main>
 
   <script src="admin.js"></script>
+
+
+<script>
+async function loadLiveVisitors() {
+  const res = await fetch("/admin/online");
+  const data = await res.json();
+  document.getElementById("liveVisitors").innerText =
+    "Live Besucher: " + data.online;
+}
+
+setInterval(loadLiveVisitors, 5000);
+loadLiveVisitors();
+</script>
+
+  
 </body>
 </html>
