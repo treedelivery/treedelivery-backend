@@ -761,7 +761,16 @@ app.post("/track", async (req, res) => {
   }
 });
 
+//nochwas für tracking glaube ich
+app.get("/admin/online", async (req, res) => {
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
+  const uniqueSessions = await db.collection("analytics").distinct("sessionId", {
+    timestamp: { $gte: tenMinutesAgo }
+  });
+
+  res.json({ online: uniqueSessions.length });
+});
 
 // -------------------------------------------------------
 // Bestellung abrufen (/lookup)
