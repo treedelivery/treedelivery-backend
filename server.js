@@ -18,7 +18,12 @@ dotenv.config();
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: [
+    "https://treedelivery.de",
+    "https://www.treedelivery.de"
+  ]
+}));
 
 // -------------------------------------------------------
 // File-path Setup (damit sendFile funktioniert)
@@ -764,6 +769,11 @@ app.post("/track", async (req, res) => {
 //nochwas für tracking glaube ich
 app.get("/admin/online", async (req, res) => {
   const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+  app.get("/debug/analytics-count", async (req, res) => {
+  const count = await analytics.countDocuments();
+  res.json({ count });
+});
 
   const uniqueSessions = await db.collection("analytics").distinct("sessionId", {
     timestamp: { $gte: tenMinutesAgo }
